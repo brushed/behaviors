@@ -1,12 +1,23 @@
+/*
+Class: TableX.Filter
+	Allows to filter html tables based on regexp enabled filter search box.
+	Filtering happens both on column and row basis.
+
+Credits:
+	Inspired by jquery.filterTable by Sunny Walker,
+	http://sunnywalker.github.io/jQuery.FilterTable/
+
+*/
 TableX.Filter = new Class({
 
 	Implements: Options,
 
 	options :{
-		highlight: 'alt',   //class applied to cells containing the filter term
-		minRows: 8,  //don't show the filter on tables with less than this number of rows
-		list: [],  //list of phrases to quick fill the search
-		hint: 'filter this table'  //HTML5 placeholder text for the filter field
+		minSize: 8,  //don't show the filter on tables with less than this number of rows
+		shortcut: 'a.btn[href="#"][text="{0}"]', //shortcut template
+		list: [],  //list of shortcuts to quickly filter the table
+		hint: 'filter this table',  //HTML5 placeholder text for the filter field
+		highlight: 'highlight'  //class applied to cells containing the filter term
 	},
 
 	initialize: function(table, options){
@@ -18,14 +29,12 @@ TableX.Filter = new Class({
 			minRows = options.minRows,
 			filter = self.filter.bind(self);
 
-		//self.table = table;
-		self.rows = table.getElements('tr');  //fixme : what about nested tables
-		self.cells = table.getElements('td');
+		self.table = table = new TableX(table, {minSize:options.minSize});
 
-		if( table.match('table') && ( (minRows===0) || (self.rows.length > minRows) ) ){
+		if( table ){
 
 			options.list.each(function(item){
-				items.push( 'a.quick[href="#"][text="'+item+'"]',{events:{click : self.quick.pass(item,self) }} );
+				items.push( options.shortcut.xsubs(item),{events:{click : self.shortcut.pass(item,self) }} );
 			});
 
 			['p.filter-input',[
@@ -37,12 +46,12 @@ TableX.Filter = new Class({
 					}
 				}],
 				items
-			].rendAr().inject(table,'before');
+			].rendAr().inject(table.table,'before');
 
 		}
 	},
 
-	quick: function(value){
+	shortcut: function(value){
 		this.input.set('value', value).fireEvent('click').focus();
 	},
 
@@ -52,8 +61,8 @@ TableX.Filter = new Class({
 			visible = 'visible',
 			highlight = self.options.highlight,
 
-			rows = self.rows,
-			cells = self.cells.removeClass(highlight),
+			rows = self.table.rows,
+			cells = self.table.cells.removeClass(highlight),
 
 			query = self.input.value,
 			queryRE;
@@ -67,7 +76,7 @@ TableX.Filter = new Class({
 
 		} else {
 
-			rows.hide().removeClass(visible);
+			rows.hide().removeClass(visible); //hide all
 
 			cells.filter( function(el){
 
@@ -79,4 +88,3 @@ TableX.Filter = new Class({
 	}
 
 });
-

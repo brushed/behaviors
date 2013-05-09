@@ -18,24 +18,30 @@ TableX.Sort = new Class({
 	Implements: Options,
 
 	options: {
-		sort: "Click to sort",
-		ascending: "Ascending. Click to reverse",
-		descending: "Descending. Click to reverse"
+		css: {
+			sort:'sort',
+			atoz:'up',
+			ztoa:'down'
+		},
+		hints: {
+			sort: "Click to sort",
+			atoz: "Ascending. Click to reverse",
+			ztoa: "Descending. Click to reverse"
+		}
 	},
 
 	initialize: function(table,options){
 
-		this.setOptions(options);
-		this.table = table = new TableX(table);
+		options = this.setOptions(options).options;
+		this.table = table = new TableX(table,{minSize:3});
 
 		if( table ){
 
-			table.table.rows[0].set({
-				'class': 'sort',
-				events: { 'click:relay(th)': this.sort.bind(this) }
-			});
-
-			table.thead.set('title', this.options.title.sort)
+			table.table.rows[0].addEvent('click:relay(th)', this.sort.bind(this) );
+			table.thead.set({
+				'class': options.css.sort,
+				title: options.hints.sort
+			})
 
 		}
 
@@ -45,24 +51,24 @@ TableX.Sort = new Class({
 
 		var table = this.table,
 			thead = table.thead,
-			th = event.target,
-			atoz = 'ascending',
-			ztoa =  'descending',
-			sortAtoZ = th.hasClass(atoz),
 			rows = table.rows,
-			title = this.options.title;
-
+			th = event.target,
+			options = this.options,
+			hints = options.hints,
+			css = options.css;
+			sortAtoZ = th.hasClass(css.atoz);
 
 		//console.log( ( sortAtoZ || th.hasClass(ztoa) ) ? "reverse" : "sort first time" );
 
-		table.refresh( sortAtoZ || th.hasClass(ztoa) ?
+		table.refresh( sortAtoZ || th.hasClass(css.ztoa) ?
 			rows.reverse() :
 			rows.sort( this.makeSortable(rows, thead.indexOf(th)) )
 		);
 
-		thead.removeClass(atoz).removeClass(ztoa).set('title', title.sort);
+		thead.set({'class':css.sort, 'title':hints.sort}); //reset class and hints on all TH's
 
-		th.ifClass(sortAtoZ, ztoa, atoz).set('title', title[sortAtoZ ? ztoa : atoz]);
+		sortAtoZ = sortAtoZ ? 'ztoa':'atoz';
+		th.swapClass(css.sort,css[sortAtoZ]).set('title', hints[sortAtoZ]);
 
 	},
 
@@ -139,7 +145,6 @@ Array.implement({
 			reKMGT = /([\d.,]+)\s*([kmgt])b/,
 			kmgtPower = { m:3, g:6, t:9 },
 			reNAT = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g,
-			//re = /(^-?\d+(\.?\d*)[df]?e?\d?$|^0x[\da-f]+$|\d+)/gi,
 			result = [];
 
 
@@ -147,9 +152,10 @@ Array.implement({
 
 			if( v ){
 
-				//v = v.clean().toLowerCase();
+				v = v.clean().toLowerCase();
 
 				num &= v.test(/\d+/);
+
 				flt &= !isNaN(v.toFloat());
 				/* chrome accepts numbers as valid Dates -- so make sure non-digit chars are present */
 				ddd &= !isNaN(Date.parse(v))  && v.test(/[^\d]/);
@@ -159,31 +165,33 @@ Array.implement({
 				kmgt &= v.test(reKMGT); //eg 2 MB, 4GB, 1.2kb, 8Tb
 				empty &= (v=='');
 
-				nat &= v.test(reNAT);
-
+				nat &= reNAT.test(v);
+console.log("*"+v+"*",nat, reNAT.test(v), v.match(reNAT));
 			}
 
 		});
 
-		console.log( kmgt ? "kmgt" : euro ? "euro" : ip4 ? "ip4" : ddd ? "date" : flt ? "float" : num ? "num": nat ? "nat" : "string" );
-
+ip4=false;
+num=false;
+flt=false;
+		console.log( kmgt ? "kmgt" : euro ? "euro" : ip4 ? "ip4" : ddd ? "date" : flt ? "float" : num ? "num": "string", nat ? "nat" : "string" );
 
 		return this.map( function( val ){
 
 			if( kmgt ){
 
-				val = val.match(reKMGT) || [0,0,''];
+				val = val.toLowerCase().match(reKMGT) || [0,'0',''];
 				val = val[1].replace(/,/g,'').toFloat() * Math.pow(10, kmgtPower[ val[2] ] || 0);
 
 			} else if( euro ){
 
 				val = val.replace(/[^\d.,]/g,'').toFloat();
-
+/*
 			} else if( ip4 ){
 
 				val = val.split( '.' );
 				val = ( (val[0].toInt() * 256 + val[1].toInt() ) * 256 + val[2].toInt() ) * 256 + val[3].toInt();
-
+*/
 			} else if( ddd ){
 
 				val = Date.parse( val );

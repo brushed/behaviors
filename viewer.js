@@ -29,37 +29,6 @@ this.Viewer = {
 	},
 
 
-	preloads:function(elements, options, callback){
-
-		var countdown = elements.length,
-			preloads = [],
-			w=0,
-			h=0;
-
-		if( !countdown ) return this.preload(elements, options, callback);
-
-		while( elements[0] ){
-
-			this.preload(elements.shift(), options, function(preload, width, height){
-
-				preloads.push( preload );
-				w = w.max(width);
-				h = h.max(height);
-				console.log(preloads.length,w,h);
-
-				if( (--countdown==0) && callback ){
-
-					console.log("preloads done");
-					callback( preloads, w, h );
-
-				}
-
-			});
-
-		}
-
-	},
-
 	preload: function(url, options, callback ){
 
 		var match = this.match(url, options),
@@ -105,7 +74,33 @@ this.Viewer = {
 		done.delay(1); //sniff
 		//console.log("PRELOAD ", typeOf( preload ), preload );
 
+	},
+		preloads:function(elements, options, callback){
+
+		var countdown = elements.length,
+			preloads = [],
+			w=0,
+			h=0;
+
+		if( !countdown ) return this.preload(elements, options, callback);
+
+		while( elements[0] ){
+
+			this.preload(elements.shift(), options, function(preload, width, height){
+
+				preloads.push( preload );
+				w = w.max(width);
+				h = h.max(height);
+				console.log( preloads.length,w,width,h,height, countdown==1?'done':'');
+
+				if( !--countdown && callback ) callback( preloads, w, h );
+
+			});
+
+		}
+
 	}
+
 }
 
 var AdobeFlashPlayer = 'clsid:D27CDB6E-AE6D-11cf-96B8-444553540000';
