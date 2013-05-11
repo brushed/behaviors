@@ -18,7 +18,7 @@ Usage:
 */
 var TableX = new Class({
 
-	Implements: Events,
+	Implements: [Options,Events],
 
 	initialize: function(table, options){
 
@@ -26,7 +26,7 @@ var TableX = new Class({
 			minSize = ( options||{} ).minSize||0;
 
 		if( !self ){
-			//filter minima ( (minRows===0) || (self.rows.length > minRows) ) ){
+
 			if( !table.match('table') ||
 				( (minSize!=0)&&(table.rows.length < minSize) ) ) return null;
 
@@ -36,9 +36,8 @@ var TableX = new Class({
 			self.rows = $$(Array.slice(table.rows, self.thead.length>0 ? 1 : 0));
 			self.cells = table.getElements('td'); //fixme: check for nested tables
 
-			//console.log(self.rows.length, self.cells.length);
 		}
-		return self;
+		return self && self.setOptions(options);  //set additional options
 	},
 
 	/*
@@ -49,8 +48,8 @@ var TableX = new Class({
 
 		var	frag = document.createDocumentFragment();
 		rows.each( function(r){ frag.appendChild(r); });
-
 		this.table.appendChild(frag);
+
 		this.fireEvent('refresh', this);
 	},
 

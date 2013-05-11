@@ -1,49 +1,37 @@
 /*
-	Function: zebrafy
-		Add odd/even coloring to the table.
+Class: TableX.Zebra
+	Simple class to add odd/even coloring to tables.
 
-	Arguments:
-		color1 - color specified in hex(without #) or as html color name.
-		color1 - color specified in hex(without #) or as html color name.
+	When the first color == 'table' or '' the predefined css class ''.odd''
+	is used to color the alternative rows.
 
-		When the first color == 'table' or '' the predefined css class ''.odd''
-		is used to color the alternative rows.
+Usage:
+	> new TableX.Zebra( table-element, {colors:['eee','fff']});
+	> new TableX.Zebra( table-element, {colors:['red']});
+
 */
-TableX.Zebra = new Class({
+TableX.Zebra = function(table, options){
 
-	initialize: function(table,options){
+	var colors = options.colors,
 
-		var colors = options.colors||['',''];
+		stripe = function( table ){
 
-		this.colors = ( colors[0].test('table') ) ?
-			'odd' :
-			colors.map( function(color){ return new Color(color,'hex'); });
-
-		return new Table(table, { onRefresh: this.zebrafy.bind(this) }) ? this : null;
-
-	},
-
-	zebrafy: function(table){
-
-		var colors= this.colors, j = 0;
-
-		//table.getVisibleRows().each( function(r){
-		table.rows.each( function(r){
-
-			if ( r.isVisible() /*.style.display!='none'*/ ){
-
-				if ( colors[j] ){
-					r.setStyle('background-color', colors[j]);
+			table && table.rows.filter( Element.isVisible ).each( function(row,j){
+				j &= 1;
+				if( colors[0] && colors[j] ){
+					row.setStyle('background-color', colors[j]);
 				} else {
-					r.ifClass(j, colors);
+					row.ifClass(j, colors);
 				}
+			});
+		};
 
-				j ^= 1; //0,1,0,1
-				console.log(j);
-			}
-		});
+	colors = ( !colors[0] || colors[0]=='table' ) ?
+		'odd' :
+		colors.map( function(c){ return new Color(c); });
 
-	}
+	console.log(options.colors, colors[0],colors[1]);
 
-});
+	stripe( new TableX(table, { onRefresh:stripe }) );
 
+}

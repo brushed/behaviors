@@ -1,8 +1,7 @@
 /*
 Class: TableX.Sort
 	Adds ''click'' handlers to sort table columns.
-	Clickable header fields get a CSS class to change the appearance depending on
-	ascending / descending sort order.
+	CSS classes are added to the header depending on the sort order.
 	The data-type of each column is auto-recognized.
 
 	Todo: add spinner while sorting
@@ -19,9 +18,9 @@ TableX.Sort = new Class({
 
 	options: {
 		css: {
-			sort:'sort',
-			atoz:'up',
-			ztoa:'down'
+			sort: 'sort',
+			atoz: 'up',
+			ztoa: 'down'
 		},
 		hints: {
 			sort: "Click to sort",
@@ -32,25 +31,27 @@ TableX.Sort = new Class({
 
 	initialize: function(table,options){
 
-		options = this.setOptions(options).options;
+		this.setOptions(options).options;
 		this.table = table = new TableX(table,{minSize:3});
 
 		if( table ){
-
 			table.table.rows[0].addEvent('click:relay(th)', this.sort.bind(this) );
-			table.thead.set({
-				'class': options.css.sort,
-				title: options.hints.sort
-			})
-
+			this.reset();
 		}
+
+	},
+
+	//reset class and hints on all TH's
+	reset: function(){
+
+		var options = this.options;
+		this.table.thead.set({'class': options.css.sort, title: options.hints.sort });
 
 	},
 
 	sort: function( event ){
 
 		var table = this.table,
-			thead = table.thead,
 			rows = table.rows,
 			th = event.target,
 			options = this.options,
@@ -62,10 +63,10 @@ TableX.Sort = new Class({
 
 		table.refresh( sortAtoZ || th.hasClass(css.ztoa) ?
 			rows.reverse() :
-			rows.sort( this.makeSortable(rows, thead.indexOf(th)) )
+			rows.sort( this.makeSortable(rows, table.thead.indexOf(th)) )
 		);
 
-		thead.set({'class':css.sort, 'title':hints.sort}); //reset class and hints on all TH's
+		this.reset();
 
 		sortAtoZ = sortAtoZ ? 'ztoa':'atoz';
 		th.swapClass(css.sort,css[sortAtoZ]).set('title', hints[sortAtoZ]);
@@ -73,10 +74,10 @@ TableX.Sort = new Class({
 	},
 
 	/*
-	Function: guessDataType
+	Function: makeSortable
 		Parse the column and guess its data-type.
 		Then convert all values according to that data-type.
-		The result is cached in rows~[n].data.
+		Cache the sortable values in rows[0-n].cache.
 		Empty rows will sort based on the title attribute of the cells.
 
 	Supported data-types:
@@ -91,6 +92,9 @@ TableX.Sort = new Class({
 		rows - array of rows each pointing to a DOM tr element
 			rows[i].data caches the converted data.
 		column - index (0..n) of the processed column
+
+	Returns:
+		comparison function which can be used to sort the table
 	*/
 
 	makeSortable: function(rows,column){
@@ -103,12 +107,13 @@ console.log(rows.length,column);
 
 		if( !rows[0][cache] || !rows[0][cache][column] ){
 
-			//convert the column to sortable values and cache them in row.cache[column]
+			//convert the column to an array of sortable values
 			sortable = rows.map( function(row){
 				cell = row.cells[column];
 				return cell.getAttribute('jspwiki:sortvalue') || cell.get('text');
 			}).makeSortable();
 
+			//now cache the sortable data in row.cache[column]
 			rows.each( function(row, index){
 				if( !row[cache] ){ row[cache]=[]; }
 				//row.cache[column] = empty ? row.cells[column].get('title') : sortable[index];
@@ -120,11 +125,11 @@ console.log(rows.length,column);
 		return function(a,b){
 			a = a[cache][column];
 			b = b[cache][column];
-			var ai, bi, i= 0, n, len = a.length;
+			var ai, bi, i=0, n, len = a.length;
 			while( i < len ){
-				if( !b[i] ) return 1;
 				ai = a[i];
 				bi = b[i++];
+				if( !bi ) return 1;
 				if( ai !== bi ){
 					n = ai-bi;
 					return isNaN(n) ? ai>bi ? 1 : -1 : n ;
