@@ -2,14 +2,12 @@
 Plugin: Viewer.Slimbox
 
 	Slimbox clone, refactored for JSPWiki.
-
-	Modified for inclusion in JSPWiki.
 	Added support for iframes, flash video.
 	Todo: html5 video.
 
 Credits:
-	Inspired by Slimbox by Christophe Bleys (see http://www.digitalia.be/software/slimbox)
-	and the mediaboxAdvanced by John Einselen (see http://iaian7.com/webcode/mediaboxAdvanced)
+	Inspired by Slimbox by Christophe Bleys, (see http://www.digitalia.be/software/slimbox)
+	the mediaboxAdvanced by John Einselen (see http://iaian7.com/webcode/mediaboxAdvanced)
 	and the diabox by Mike Nelson. (see https://github.com/mnelson/diabox)
 
 DOM structure:
@@ -38,8 +36,8 @@ Viewer.Slimbox = new Class({
 			close: '&times;',
 			next: 'Next', //&#171;
 			prev: 'Previous', //&#187;
-			info: '{card} {title}.',
-			size: ' ({w}px &times; {h}px)'
+			info: '{0} {1}.',
+			size: ' ({0}px &times; {1}px)'
 		},
 		keys: {
 			close: ['esc','x','c'],
@@ -223,10 +221,10 @@ Viewer.Slimbox = new Class({
 
 		self.get('.caption').set({
 			href: url,
-			html: options.text.info.substitute({
-				card:  many ? (cursor+1)+"/"+max : "",
-				title: el.get('title')/*||''*/
-			})
+			html: options.text.info.xsubs(
+				/*index*/ many ? (cursor+1)+"/"+max : "",
+				/*name*/ el.get('title')/*||''*/
+			)
 		});
 
 		self.viewport.addClass('spin');
@@ -253,7 +251,7 @@ Viewer.Slimbox = new Class({
 
 		self.preload = preload;
 
-		caption.set('html', caption.get('html') + self.options.text.size.substitute({h:height,w:width}) );
+		caption.set('html', caption.get('html') + self.options.text.size.xsubs(height,width) );
 
 		// viewport has css set to { top:50%, left:50% } for automatic centered positioning
 		viewport

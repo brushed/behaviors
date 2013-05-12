@@ -14,12 +14,12 @@ TableX.Zebra = function(table, options){
 
 	var colors = options.colors,
 
-		stripe = function( table ){
+		stripe = function(){
 
-			table && table.rows.filter( Element.isVisible ).each( function(row,j){
+			this.rows.filter( Element.isVisible ).each( function(row,j){
 				j &= 1;
-				if( colors[0] && colors[j] ){
-					row.setStyle('background-color', colors[j]);
+				if( colors[0] ){
+					row.setStyle('background-color', colors[j]||'');
 				} else {
 					row.ifClass(j, colors);
 				}
@@ -30,8 +30,8 @@ TableX.Zebra = function(table, options){
 		'odd' :
 		colors.map( function(c){ return new Color(c); });
 
-	console.log(options.colors, colors[0],colors[1]);
+	//console.log("ZEBRA ",options.colors, colors[0],colors[1]);
 
-	stripe( new TableX(table, { onRefresh:stripe }) );
+	stripe.call( new TableX(table, { onRefresh:stripe }) );
 
 }

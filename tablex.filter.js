@@ -84,7 +84,10 @@ TableX.Filter = new Class({
 
 			}).addClass(highlight).getParent(/*tr*/).show().addClass(visible);
 
+
 		}
+
+		self.table.refresh();
 	}
 
 });

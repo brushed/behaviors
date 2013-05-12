@@ -46,11 +46,12 @@ var TableX = new Class({
 	*/
 	refresh: function(rows){
 
-		var	frag = document.createDocumentFragment();
-		rows.each( function(r){ frag.appendChild(r); });
-		this.table.appendChild(frag);
-
-		this.fireEvent('refresh', this);
+		if( rows ){
+			var	frag = document.createDocumentFragment();
+			rows.each( function(r){ frag.appendChild(r); });
+			this.table.appendChild(frag);
+		}
+		this.fireEvent('refresh');
 	},
 
 	/*
