@@ -1,0 +1,268 @@
+<!doctype html>
+<html>
+  <head>
+  <meta charset="utf-8">
+
+  <title>TABLEX visual test page</title>
+
+  <link href="../../templates/default/jspwiki.css" rel="stylesheet"/>
+
+  <script type="text/javascript" src="../mootools-core-1.4.5.js"></script>
+  <script type="text/javascript" src="../mootools-more-1.4.0.1.js"></script>
+
+  <script>
+    //String.Localization={ ..};
+    //String.Localization.extend({ ..});
+	LocalizedStrings = {
+		"javascript.filter.all":"(All)" ,
+		"javascript.sort.click":"Click to sort",
+		"javascript.sort.ascending":"Ascending order. Click to reverse",
+		"javascript.sort.descending":"Descending order. Click to reverse",
+		"javascript.filter.hint":"Filter this beautiful table"
+	};
+  </script>
+
+  <script type="text/javascript" src="../src/mooextend.js"></script>
+  <script type="text/javascript" src="../src/localize.js"></script>
+  <script type="text/javascript" src="../src/color.js"></script>
+
+  <script type="text/javascript" src="../src/tablex.js"></script>
+  <script type="text/javascript" src="../src/tablex.zebra.js"></script>
+  <script type="text/javascript" src="../src/tablex.sort.js"></script>
+  <script type="text/javascript" src="../src/tablex.filter.js"></script>
+  <script type="text/javascript" src="../src/tablex.groupby.js"></script>
+
+  <style>
+	body { margin:1em;}
+	table { margin:0 1em 2em 0; }
+  </style>
+
+  <script type="text/javascript">
+
+window.addEvent('domready', function(){
+
+
+var hints = Object.map({
+	sort: "sort.click",
+	atoz: "sort.ascending",
+	ztoa: "sort.descending",
+	all: "filter.all",
+	filter: "filter.hint"
+},String.localize);
+
+	$$('.sortable table').each(function(element){
+		new TableX.Sort(element, {hints: hints})
+	});
+
+	$$('.table-filter table').each(function(element){
+		new TableX.Filter(element,{list:['one$','James'], hint:hints.filter});
+	});
+
+	$$('.zebra,div[class*=zebra-]').each(function(element){
+
+		var args = 'zebra'.sliceArgs(element);
+		element.getElements('table').each(function(table){
+			new TableX.Zebra(table, { colors:args });
+		});
+
+	});
+
+
+});
+
+
+var spec, arr, result, check;
+
+spec = "Simple numerics", arr = ['10',9,2,'1','4']; check = ['1',2,'4',9,'10'];
+console.log(spec, arr, result = arr.naturalSort(), check, result==check );
+
+spec="Floats"; arr=['10.0401',10.022,10.042,'10.021999']; check=['10.021999',10.022,'10.0401',10.042];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Float & decimal notation"; arr=['10.04f','10.039F','10.038d','10.037D']; check=['10.037D','10.038d','10.039F','10.04f'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Scientific notation"; arr=['1.528535047e5','1.528535047e7','1.528535047e3']; check=['1.528535047e3','1.528535047e5','1.528535047e7'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="IP addresses"; arr=['192.168.0.100','192.168.0.1','192.168.1.1']; check=['192.168.0.1','192.168.0.100','192.168.1.1'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Filenames"; arr=['car.mov','01alpha.sgi','001alpha.sgi','my.string_41299.tif']; check=['001alpha.sgi','01alpha.sgi','car.mov','my.string_41299.tif'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Dates"; arr=['10/12/2008','10/11/2008','10/11/2007','10/12/2007']; check=['10/11/2007', '10/12/2007', '10/11/2008', '10/12/2008'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Money"; arr=['$10002.00','$10001.02','$10001.01']; check=['$10001.01','$10001.02','$10002.00'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+spec="Movie Titles";
+arr=['1 Title - The Big Lebowski','1 Title - Gattaca','1 Title - Last Picture Show'];
+check=['1 Title - Gattaca','1 Title - Last Picture Show','1 Title - The Big Lebowski'];
+console.log(spec, arr, result = arr.naturalSort(), check );
+
+
+
+	</script>
+
+</head>
+
+<body>
+
+<table>
+<tr style="vertical-align:top;">
+<td>
+
+    <h1>Tablesort</h1>
+
+	<div class="sortable">
+	<table class="wikitable" >
+
+			<tr>
+				<th scope="col" title="President Number">#</th>
+				<th scope="col">President</th>
+				<th scope="col">Terms</th>
+				<th scope="col">Tenure</th>
+			</tr>
+			<tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
+			<tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
+			<tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
+			<tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
+			<tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
+			<tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
+			<tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
+			<tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
+			<tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
+			<tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
+			<tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
+			<tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
+			<tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
+			<tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
+			<tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
+			<tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
+			<tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
+			<tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
+			<tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
+			<tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
+			<tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
+			<tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
+			<tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
+			<tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
+			<tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
+			<tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
+			<tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
+			<tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
+			<tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
+			<tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
+			<tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
+			<tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
+			<tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
+			<tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
+			<tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
+			<tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
+			<tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
+			<tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
+			<tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
+			<tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
+			<tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
+			<tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
+			<tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
+			<tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
+
+	</table
+	</div>
+
+</td>
+<td>
+
+
+    <h1>Sorted Table</h1>
+
+	<div class="sortable zebra-lemonchiffon-gold">
+
+<table class="wikitable" border="1"><tr class="odd"><th> Title </th><th> Author </th><th> Published   </th><th> Edition </th><th> Some IP@        </th><th> Expenses </th><th> Disk Memory</th></tr>
+<tr><td> book1  </td><td>  zappy  </td><td>  25 Feb 2005 </td><td>  5       </td><td>  100.100.100.100 </td><td>  €500     </td><td>  2Gb </td></tr>
+<tr class="odd"><td> book2  </td><td>  happy  </td><td>  25 Jan 2005 </td><td>  19      </td><td>  256.100.100.100 </td><td>  €1500    </td><td>  4Kb</td></tr>
+<tr><td> book3  </td><td>  pappy  </td><td>  23 Mar 2005 </td><td>  06      </td><td>  10.100.100.100  </td><td>  €50      </td><td>  1.23TB</td></tr>
+<tr class="odd"><td> book4  </td><td>  dappy  </td><td>  21 Apr 2005 </td><td>  199     </td><td>  1.100.100.100   </td><td>  €0.500   </td><td>  2.73kb</td></tr>
+<tr><td> book5  </td><td>  rappy  </td><td>  25 Jul 2005 </td><td>  017     </td><td>  1.100.25.100    </td><td>  €5500    </td><td>  0.4Tb</td></tr>
+</table>
+
+
+<table class="wikitable" border="1"><tr class="odd"><th> Title </th><th> Author </th><th> Published   </th><th> Edition </th><th> Some IP@        </th><th> Expenses </th><th> Disk Memory</th></tr>
+<tr><td> book1  </td><td>  123asd  </td><td>  25 Feb 2005 </td><td>  5       </td><td>  100.100.100.100 </td><td>  €500     </td><td>  2Gb </td></tr>
+<tr><td> book2  </td><td>  19asd  </td><td>  25 Jan 2005 </td><td>  19      </td><td>  256.100.100.100 </td><td>  €1500    </td><td>  4Kb</td></tr>
+<tr><td> book3  </td><td>  12345asd  </td><td>  23 Mar 2005 </td><td>  06      </td><td>  10.100.100.100  </td><td>  €50      </td><td>  1.23TB</td></tr>
+<tr><td> book4  </td><td>  asd123  </td><td>  21 Apr 2005 </td><td>  199     </td><td>  1.100.100.100   </td><td>  €0.500   </td><td>  2.73kb</td></tr>
+<tr><td> book5  </td><td>  asd12  </td><td>  25 Jul 2005 </td><td>  017     </td><td>  1.100.25.100    </td><td>  €5500    </td><td>  0.4Tb</td></tr>
+</table>
+
+
+	</div>
+
+</td>
+<td>
+
+    <h1>Filtered Table (new)</h1>
+
+	<div class="zebra-lightcyan table-filter sortable">
+	<table class="wikitable" >
+			<tr>
+				<th scope="col" title="President Number">#</th>
+				<th scope="col">President</th>
+				<th scope="col">Terms</th>
+				<th scope="col">Tenure</th>
+			</tr>
+			<tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
+			<tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
+			<tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
+			<tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
+			<tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
+			<tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
+			<tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
+			<tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
+			<tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
+			<tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
+			<tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
+			<tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
+			<tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
+			<tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
+			<tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
+			<tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
+			<tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
+			<tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
+			<tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
+			<tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
+			<tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
+			<tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
+			<tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
+			<tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
+			<tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
+			<tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
+			<tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
+			<tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
+			<tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
+			<tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
+			<tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
+			<tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
+			<tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
+			<tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
+			<tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
+			<tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
+			<tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
+			<tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
+			<tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
+			<tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
+			<tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
+			<tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
+			<tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
+			<tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
+		</table>
+	</div>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

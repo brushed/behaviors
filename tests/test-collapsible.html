@@ -1,0 +1,413 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <title>TEST COLLAPSE/TREE</title>
+
+  <script type="text/javascript" src="../mootools-core-1.4.5.js"></script>
+  <script type="text/javascript" src="../mootools-more-1.4.0.1.js"></script>
+
+  <script>
+    //String.Localization={ ..};
+    //String.Localization.extend({ ..});
+	LocalizedStrings = {
+		"javascript.filter.all":"(All)" ,
+		"javascript.filter.hint":"Filter this beautiful table"
+	};
+  </script>
+
+
+  <script type="text/javascript" src="../src/mooextend.js"></script>
+  <script type="text/javascript" src="../src/localize.js"></script>
+  <script type="text/javascript" src="../src/cookie.flags.js"></script>
+
+  <script type="text/javascript" src="../src/collapsible.js"></script>
+
+  <script>
+
+  window.addEvent('domready', function(){
+
+	console.log("loaded");
+	$$('.collapse', Collapsible.List, {} );
+
+//fixme
+	$$('[class*=collapsebox]', function(element){
+
+		console.log(element.className);
+		var closed = element.hasClass("collapsebox-closed");
+		element.swapClass("collapsebox-closed","collapsebox");
+		new Collapsible.Box(element, { collapsed: closed })
+
+	});
+
+  });
+
+  </script>
+
+
+
+  <style type="text/css">
+body {padding:1em 4em; font-family:tahoma,sans-serif;}
+a {text-decoration:none;}
+textarea {height:18em; width:100%; font:12px Monaco, monospace; padding:.5em; resize:none; outline:0;}
+
+/*
+Style: Collapsible
+
+
+.bullet
+.bullet.clpse
+.bullet.xpand
+
+*/
+.bullet, .bullet.xpand, .bullet.clpse {
+	outline:0;
+	float:left;
+	display:inline-block;
+	text-align:center;
+	color:blue;
+	font:small Monaco, "Courier New", Courier, monospace;
+	width:1.2em;
+	line-height:1.2em;
+}
+.bullet.xpand, .bullet.clpse {
+	cursor:pointer;
+}
+/* text bullets*/
+.bullet.xpand:hover, .bullet.clpse:hover {
+	background:#eee;
+	}
+.bullet:after { content:"\2022"; }
+.bullet.xpand:after { content:"-"; }
+.bullet.clpse:after { content:"+"; }
+
+/* triangular bullets : .arrow */
+.arrow .bullet.xpand, .arrow .bullet.clpse {
+	width:0;
+	height:0;
+	border:.4em solid transparent;
+}
+.arrow .bullet.xpand:after, .arrow .bullet.clpse:after {
+	content:"";
+}
+.arrow .bullet.xpand {
+	border-top-color:blue;
+	border-bottom:none;
+	margin:.4em .2em;
+}
+.arrow .bullet.clpse {
+	border-left-color:blue;
+	border-right:none;
+	margin:.2em .4em;
+}
+
+/* Make sure to print collapsed items as it they were not collapsed */
+@media print {
+	.collapse .clpse {
+		display:block;
+		height:auto !important;
+		width:auto !important;
+	}
+}
+
+/*
+Style: Collapsible.List
+
+DOM structure:
+div.collapsible'
+	ul
+		li
+			b.bullet.xpand|clpse'[click='...']
+			List-Item-text
+			ul.xpand|clpse
+				...collapsible content ...
+		li ...
+*/
+.collapse ul, .collapse ol {
+	margin:0; padding:0;
+}
+.collapse li ul, .collapse li ol {
+	margin-left:1.5em;
+}
+.collapse li {
+	list-style-type: none;
+}
+
+/*
+Style: CollapsibleBox
+
+DOM structure:
+div.collapsebox
+	b.bullet.xpand|clpse'[click='...']
+	h1[text=title]
+	div.xpand|clpse
+		... collapsible content ...
+*/
+.collapsebox {
+	border:1px solid #ddd/*#BORDER#*/;
+	margin:0 0 .5em 0;
+}
+.collapsebox > b.bullet {
+	padding:.25em;
+}
+.collapsebox > b.bullet + * {
+	margin:0;
+	padding:0.25em;
+	font-size:1em;  /* overrule font-size of eg h1|h2|h3  */
+}
+/* .collapsebox body    -- or: .collapsebox > b.bullet + * + div */
+.collapsebox > div {
+	margin:0;
+	padding:0 1em;
+}
+
+
+/* CHECKME !! ie6 hack : avoid strange side-effect on borders */
+* html .collapse ul, * html .collapse ol {
+	width:100%;
+}
+/* FIXME !! ie7 hack */
+/**:first-child+html .collapse .collapsebody,
+*:first-child+html .collapsebox .collapse .collapsebody {
+	float:left;
+	padding-left:0.5em;
+}
+*/
+/* ie6 hack */
+/*
+* html .collapse .collapsebody, * html .collapsebox .collapse .collapsebody {
+	float:left;
+	padding-left:0.5em;
+}
+*/
+
+/*** testing help styles ***/
+
+p { margin:0.25em; padding:0;}
+
+.column  {
+	margin:0 0 0.5em 0.5em;
+	width:250px;
+	float:left;
+	background:#feeee5;
+}
+
+.main{display:table-cell;*display:block;width:auto;}
+.body,.main{*zoom:1;}
+.body:after,.main:after{clear:both;display:block;visibility:hidden;overflow:hidden;height:0 !important;line-height:0;font-size:xx-large;content:" x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x ";}
+.page{margin:0 auto;width:950px;_text-align:left;} /* wraps other template elems to set width */ /* text-align IE5.5 */
+/* "old school" and "liquid" extend page to allow for different page widths */
+.gs960{width:960px;}
+.liquid{width:auto;margin:0;}
+.leftCol{float:left;width:150px;_margin-right:-3px;}
+.rightCol{float:right;width:150px;_margin-left:-3px;}
+
+.page { background-color:#feeee5; margin:.5em; padding:.5em;}
+.leftCol { background-color:#d0c165; }
+.main { padding-left:.5em; }
+.nav {
+	background:red; color:white; border-radius:1em;font-weight:bold; cursor:pointer;
+	line-height:1.5; padding:.25em;
+}
+.nav .bullet { color:white; line-height:2em }
+.nav .bullet:hover { background:transparent; color:black; }
+
+
+  </style>
+
+  </head>
+
+  <body>
+
+    <p id="view">
+
+	<div id="test-view" class="page liquid" data-collapse=".test-favorites" data-direction="vertical">
+		<div class="body">
+		<div class="leftCol">
+			<div class="Nav">sidebar</div>
+			Favorites <br /> Favorites <br /> Favorites <br /> Favorites <br /> Favorites
+		</div>
+		<div class="main">
+			<div class="nav"><b class="bullet"></b>Test Navigation</div>
+			Test Main <br />Test Main <br /> Test Main <br />Test Main <br /> Test Main <br />Test Main
+		</div>
+		</div>
+	</div>
+
+	<hr style="clear:both" />
+
+	<div class="collapse column" >
+    <p class='nav'><b>collapsible lists</b></p>
+	<ul>
+		<li>Test 1</li>
+		<li>Test 2</li>
+		<li>Test 3
+			<ul>
+				<li>Test 3.1
+					<ul>
+						<li>Test 3.1.1</li>
+						<li>Test 3.1.2</li>
+					</ul>
+				</li>
+				<li>Test 3.2</li>
+				<li>Test 3.3</li>
+				<li>Test 3.4</li>
+			</ul>
+		</li>
+		<li>Test 4</li>
+		<li>
+			<ul>
+				<li>Test 5.1
+					<ul>
+						<li>Test 5.1.1</li>
+						<li>Test 5.1.2</li>
+					</ul>
+				</li>
+				<li>Test 5.2</li>
+			</ul>
+		</li>
+		<li>Test 6 </li>
+		<li>Test 7
+			<ol>
+				<li>Test 7.1
+					<ol>
+						<li>Test 7.1.1</li>
+						<li>Test 7.1.2</li>
+					</ol>
+				</li>
+				<li>Test 7.2</li>
+				<li>Test 7.3</li>
+				<li>Test 7.4</li>
+			</ol>
+		</li>
+	</ul>
+	</div>
+
+    <div class="collapse  column arrow" >
+    <p  class='nav'><b>collapsible lists - cookies</b></p>
+	<ul>
+		<li>Test 1</li>
+		<li>Test 2</li>
+		<li>Test 3
+			<ul>
+				<li>Test 3.1
+					<ul>
+						<li>Test 3.1.1</li>
+						<li>Test 3.1.2</li>
+					</ul>
+				</li>
+				<li>Test 3.2</li>
+				<li>Test 3.3</li>
+				<li>Test 3.4</li>
+			</ul>
+		</li>
+		<li>Test 4</li>
+		<li>
+			<ul>
+				<li>Test 5.1
+					<ul>
+						<li>Test 5.1.1</li>
+						<li>Test 5.1.2</li>
+					</ul>
+				</li>
+				<li>Test 5.2</li>
+			</ul>
+		</li>
+		<li>Test 6 </li>
+		<li>Test 7
+			<ol>
+				<li>Test 7.1
+					<ol>
+						<li>Test 7.1.1</li>
+						<li>Test 7.1.2</li>
+					</ol>
+				</li>
+				<li>Test 7.2</li>
+				<li>Test 7.3</li>
+				<li>Test 7.4</li>
+			</ol>
+		</li>
+	</ul>
+	</div>
+
+ 	<div class="collapse column"  >
+    <p class='nav'><b>collapsible tree</b></p>
+	<ul>
+		<li>Test 1</li>
+		<li>Test 2</li>
+		<li>Test 3
+			<ul>
+				<li>Test 3.1
+					<ul>
+						<li>Test 3.1.1</li>
+						<li>Test 3.1.2</li>
+					</ul>
+				</li>
+				<li>Test 3.2</li>
+				<li>Test 3.3</li>
+				<li>Test 3.4</li>
+			</ul>
+		</li>
+		<li>Test 4</li>
+		<li>
+			<ul>
+				<li>Test 5.1
+					<ul>
+						<li>Test 5.1.1</li>
+						<li>Test 5.1.2</li>
+					</ul>
+				</li>
+				<li>Test 5.2</li>
+			</ul>
+		</li>
+		<li>Test 6 </li>
+		<li>Test 7
+			<ol>
+				<li>Test 7.1
+					<ol>
+						<li>Test 7.1.1</li>
+						<li>Test 7.1.2</li>
+					</ol>
+				</li>
+				<li>Test 7.2</li>
+				<li>Test 7.3</li>
+				<li>Test 7.4</li>
+			</ol>
+		</li>
+	</ul>
+	</div>
+
+
+    <div class="collapsebox  column">
+    <h1>Collapsible box</h1>
+
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+    <div class="collapsebox-closed">
+    <h3>TITLE</h3>
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+    </div>
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+    </div>
+
+    <div class="collapsebox-closed column">
+    <h1>Collapsible box</h1>
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+    </p>
+    </div>
+
+    <div class="collapsebox-closed column">
+    <h1>EmptyCollapsible box</h1>
+    </div>
+
+
+
+  </body>
+</html>
+
+

@@ -36,13 +36,12 @@ TableX.Sort = new Class({
 
 		if( table ){
 			table.table.rows[0].addEvent('click:relay(th)', this.sort.bind(this) );
-			this.reset();
+			this.resetTH();
 		}
 
 	},
 
-	//reset class and hints on all TH's
-	reset: function(){
+	resetTH: function(){
 
 		var options = this.options;
 		this.table.thead.set({'class': options.css.sort, title: options.hints.sort });
@@ -66,7 +65,7 @@ TableX.Sort = new Class({
 			rows.sort( this.makeSortable(rows, table.thead.indexOf(th)) )
 		);
 
-		this.reset();
+		this.resetTH();
 
 		sortAtoZ = sortAtoZ ? 'ztoa':'atoz';
 		th.swapClass(css.sort,css[sortAtoZ]).set('title', hints[sortAtoZ]);
@@ -99,19 +98,19 @@ TableX.Sort = new Class({
 
 	makeSortable: function(rows,column){
 
-console.log(rows.length,column);
+		console.log(rows.length,column);
 
-		var sortable, cell,
+		var sortable, cell, compareFn,
 			cache = 'cache'; //name of the cache attribute on each row
-
 
 		if( !rows[0][cache] || !rows[0][cache][column] ){
 
 			//convert the column to an array of sortable values
 			sortable = rows.map( function(row){
 				cell = row.cells[column];
-				return cell.getAttribute('jspwiki:sortvalue') || cell.get('text');
+				return cell.getAttribute('data-sortby') || cell.get('text');
 			}).makeSortable();
+			compareFn = sortable.cmp;
 
 			//now cache the sortable data in row.cache[column]
 			rows.each( function(row, index){
@@ -120,29 +119,96 @@ console.log(rows.length,column);
 				row[cache][column] = sortable[index];
 			});
 
-		}
+			this.cmp[column] =
 
-		return function(a,b){
-			a = a[cache][column];
-			b = b[cache][column];
-			var ai, bi, i=0, n, len = a.length;
-			while( i < len ){
-				ai = a[i];
-				bi = b[i++];
-				if( !bi ) return 1;
-				if( ai !== bi ){
-					n = ai-bi;
-					return isNaN(n) ? ai>bi ? 1 : -1 : n ;
-				}
+			rows.cmp = function(a,b){
+				return compareFn( a[cache][column], b[cache][column] );
 			}
-			return b[i] ? -1 : 0;
+
 		}
+		//rows.cmp = this.cmp[column];
+		return rows;
 
 	}
 });
 
 
 Array.implement({
+
+	/* comparison function for normalised arrays */
+	cmp: function(a,b){
+		a = a[0]; b = b[0];
+		var aa, bb, i= x = a.length - b.length;
+		if( !a[0] ) return (a<b) ? -1 : (a>b) ? 1 : 0;
+		if( !x ) while( aa = a[i] ){
+			if(aa !== (bb=b[i++])) return (aa > bb) ? 1 : -1;
+		}
+		return x;
+	},
+
+	naturalSort:function(){
+		var arr = this.makeSortable2();
+		arr = arr.sort( this.cmp );
+		return arr.map( function(item){ return item[1]; })
+	},
+
+	makeSortable2:function(){
+
+		var num = true, dmy=num, kmgt=num, empty=num, nat=num,
+			reKMGT = /([\d.,]+)\s*([kmgt])b/i,
+			kmgtPower = { m:3, g:6, t:9 },
+			reNAT = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g,
+			val, i, len = this.length, result=[];
+
+		/* guess data type */
+		for( i=0; i<len; i++){
+
+			val = this[i];
+
+				num &= !isNaN(+val);
+				nat &= reNAT.test(val);
+				/* chrome accepts numbers as valid Dates -- so make sure non-digit chars are present */
+				dmy &= !isNaN(Date.parse(val))  && !num; //val.test(/[^\d]/);
+				kmgt &= reKMGT.test(val); //eg 2 MB, 4GB, 1.2kb, 8Tb
+				empty &= (val=='');
+
+		};
+		console.log("num:"+num,"dmy:"+dmy,"kmgt:"+kmgt,"empty:"+empty,"nat:"+nat);
+
+		/* map array to sortable values */
+		for(i=0; i<len; i++){
+
+			val = this[i];
+
+			if( kmgt ){
+
+				val = val.toLowerCase().match(reKMGT) || [0,'0',''];
+				val = val[1].replace(/,/g,'').toFloat() * Math.pow(10, kmgtPower[ val[2] ] || 0);
+
+			} else if( dmy ){
+
+				val = Date.parse( val );
+
+			} else if( nat ){
+				val = val.match(reNAT);
+				console.log("**natSort ",val);
+
+			} else if( num ){
+
+				val = +val; //.match(/\d+/)[0].toInt();
+
+			}
+
+			//return empty ? val.get('title') : val;  //checkme?
+			result[i]= [val, this[i]];
+			//console.log(val, result[i]);
+
+		};
+
+		console.log( result );
+    	return result;
+
+	},
 
 	makeSortable:function(){
 

@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>Test JSPWiki SLIMBOX</title>
+
+  <link rel="stylesheet" media="screen, projection, print" type="text/css"
+        href="../../templates/default/jspwiki.css"/>
+
+  <meta name="wikiContext" content='edit' />
+
+  <script type="text/javascript" src="../mootools-core-1.4.5.js"></script>
+  <script type="text/javascript" src="../mootools-more-1.4.0.1.js"></script>
+  <script>
+	LocalizedStrings = {
+		"javascript.some.resource.key":"localised resource key {0}" ,
+		"javascript.moreInfo":"More",
+		"javascript.imageInfo":"Image {0} of {1}",
+		"javascript.imageInfo2":"Image {imgCount} of {totalCount}",
+		"javascript.slimbox.hover":"Click to",
+		"javascript.slimbox.error":"Error",
+		"javascript.slimbox.next":">", //"&#187;",
+		"javascript.slimbox.previous":"<" //"&#171;"
+	};
+  </script>
+
+  <script type="text/javascript" src="../src/mooextend.js"></script>
+  <script type="text/javascript" src="../src/behavior.js"></script>
+  <script type="text/javascript" src="../src/color.js"></script>
+  <script type="text/javascript" src="../src/localize.js"></script>
+
+  <script type="text/javascript" src="../src/collapsible.js"></script>
+  <script type="text/javascript" src="../src/cookie.flags.js"></script>
+  <script type="text/javascript" src="../src/file-upload.js"></script>
+  <script type="text/javascript" src="../src/graph-bar.js"></script>
+  <script type="text/javascript" src="../src/highlight-word.js"></script>
+  <script type="text/javascript" src="../src/observer.js"></script>
+  <script type="text/javascript" src="../src/placeholder.js"></script>
+  <script type="text/javascript" src="../src/viewer.js"></script>
+  <script type="text/javascript" src="../src/viewer.slimbox.js"></script>
+  <script type="text/javascript" src="../src/viewer.carousel.js"></script>
+  <script type="text/javascript" src="../src/tablex.js"></script>
+  <script type="text/javascript" src="../src/tabs.js"></script>
+
+  <script type="text/javascript" src="../src/prettify4mar13.js"></script>
+
+  <script type="text/javascript" src="../src/wiki.js"></script>
+  <script type="text/javascript" src="../src/wiki.search-box.js"></script>
+  <script type="text/javascript" src="../src/wiki.search.js"></script>
+  <script type="text/javascript" src="../src/wiki.recent-searches.js"></script>
+  <script type="text/javascript" src="../src/wiki.navigate.js"></script>
+
+  <script type="text/javascript" src="../src/wiki.category.js"></script>
+  <script type="text/javascript" src="../src/wiki.d-styles.js"></script>
+
+
+<style type="text/css">
+  body {
+	margin:auto 1em;
+  }
+</style>
+
+
+</head>
+
+<body>
+<div>
+
+<h1>VIEWER</h1>
+
+<p>
+<a class='external viewer' href="http:/vimeo.com/7391362">VIMEO : Put this on - shoes</a>
+</p>
+
+<div class='viewer'>
+	<a class="external" href="http://www.ted.com/talks/adam_garone_healthier_men_one_moustache_at_a_time.html">TED : Growing Mustaches
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+	</a>
+</div>
+
+
+<h1>VIEWER.SLIMBOX</h1>
+<p><b>jsp&omega;&iexcl;&kappa;&iexcl;</b>  &#9776; Menu</p>
+
+<div class="slimbox">
+<ul>
+<li>
+	<a class="attachment" href="test-viewer-assets/doggy.bmp" title="very long doggy picture description wrapping around several lines">doggy.bmp</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+<li>
+	<a class="attachment" href="./test-viewer-assets/poppy.jpg">poppy.jpg</a>
+	<a href="./test-viewer-assets/poppy.jpg" class="infolink">
+		<img src="./test-viewer-assets/attachment_small.png" border="0" alt="(info)" />
+	</a>
+</li>
+<li>
+	<a class="attachment" href="./test-viewer-assets/wideimg.png">LARGE IMAGE</a>
+	<a href="./test-viewer-assets/wideimg.png" class="infolink">
+		<img src="./test-viewer-assets/attachment_small.png" border="0" alt="(info)" />
+	</a>
+</li>
+<li>
+	<a class="external" href="http://www.youtube.com/watch?v=t00MXZKbW0M">Youtube - Neil Young</a>
+	<img class="outlink" src="test-viewer-assets/out.png" alt="" >
+</li>
+<li>
+	<a class="external" href="http://www.flickr.com/photos/photographybyheathercullum/4237697025/">Flickr movie</a>
+	<img class="outlink" src="test-viewer-assets/out.png" alt="" >
+</li>
+
+
+
+
+<li>
+	<a class="external" href="http:/vimeo.com/7391362">VIMEO : Put this on - Denim</a>
+	<img class="outlink" src="test-viewer-assets/out.png" alt="" >
+</li>
+
+<li>
+	<a class="external" href="http://www.dailymotion.com/video/xsa9zh_da-capo_shortfilms">DailyMotion - Short film</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+<li>
+	<a class="external" href="http://www.metacafe.com/watch/5243607/easy_folding">MetaCafe - Simple folding</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+<li>
+	<a class="external" href="http://www.metacafe.com/watch/2185365/spot_electrabel_gdf_suez_happy_new_year_2009/">MetaCafe - Happy NY 2009</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+
+
+<li>
+	<a class="external" href="http://www.veoh.com/watch/v25114079zyt8Kh5t">VEOH - Yoga cat</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="external" href="http://www.ted.com/talks/amy_cuddy_your_body_language_shapes_who_you_are.html">TED - Amy Cuddy on Body language</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+
+
+<li>
+	<a class="external" href="http://www.viddler.com/player/d4cf1bc">VIDDLER - Daily Monster</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+<li>
+	<a class="external" href="http:www.jspwiki.org">IFrame - JSPWIKI-ORG external website</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+<li>
+	<a class="external" href="http://www.adobe.com/jp/events/cs3_web_edition_tour/swfs/perform.swf">External SWF</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+
+<li>
+	<a class="external" href="https://maps.google.com/maps?q=Atomium,%20City%20of%20Brussels,%20Belgium">Google Maps - Atomium</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="external" href="https://maps.google.com/maps?q=London+Eye,+County+Hall,+Westminster+Bridge+Road,+London,+United+Kingdom">Google Maps - London Eye</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+
+
+
+<li>
+	<a class="external" href="http://www.marxists.org/reference/archive/einstein/works/1910s/relative/relativity.pdf">Google Doc - Sample PDF</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+<li>
+	<a class="external" href="test-viewer-assets/sample.doc">Google Doc - Sample DOC</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+<li>
+	<a class="external" href="http://www.ecyrd.com/~jalkanen/JSPWiki/2.8.4/JSPWiki-2.8.4-bin.zip">Google Doc - Sample ZIP</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+
+<li>
+	<a class="external" href="error.txt">Error message</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+
+
+<li>
+	<a class="external" href="http://www.youtube.com/watch?v=xpgAP42VM3U">Paperman</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+<li>
+	<a class="external" href="http://www.youtube.com/watch?v=PVUPAXDPFpg">Talking Heads</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+
+
+
+</ul>
+</div>
+
+<hr />
+
+
+
+
+<ul>
+<li>
+	<a class="external" href="http:/vimeo.com/11886557">VIMEO : iPad + Velcro</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="external" href="http:/vimeo.com/11075261">VIMEO : Put this on - Shoes</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="slimbox external" href="http://vimeo.com/44866791">VIMEO : Man Eater</a>
+	<img class="outlink" src="test-viewer-assets/out.png" alt="" >
+</li>
+
+<li>
+	<a class="external" href="http:/vimeo.com/11075261">Put this on - Shoes</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="slimbox" href="http:www.jspwiki.org">JSPWIKI-ORG</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<a class="slimbox" href="http:www.jspwiki.org">JSPWIKI-ORG</a>
+	<img class="outlink" src="./test-viewer-assets/out.png" alt="" />
+</li>
+<li>
+	<span class="slimbox">
+		<a class="createpage" href="/JSPWiki-290/Edit.jsp?page=Some-funny-new-page" title="Create &quot;Some-funny-new-page&quot;">some-funny-new-page</a>
+	</span>
+</li>
+</ul>
+<p />
+
+<hr />
+
+<h1>VIEWER.CAROUSEL</h1>
+
+<div class="carousel">
+<ul>
+<li>
+	<a class="attachment" href="test-viewer-assets/doggy.bmp" title="very long doggy picture description wrapping around several lines">doggy.bmp</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+</li>
+<li>
+	<a class="attachment" href="./test-viewer-assets/poppy.jpg">poppy.jpg</a>
+	<a href="./test-viewer-assets/poppy.jpg" class="infolink">
+		<img src="./test-viewer-assets/attachment_small.png" border="0" alt="(info)" />
+	</a>
+</li>
+<li>
+	<a class="attachment" href="./test-viewer-assets/wideimg.png">LARGE IMAGE</a>
+	<a href="./test-viewer-assets/wideimg.png" class="infolink">
+		<img src="./test-viewer-assets/attachment_small.png" border="0" alt="(info)" />
+	</a>
+</li>
+<li>
+	<a class="slimbox external" href="http://vimeo.com/44866791">VIMEO : Man Eater</a>
+	<img class="outlink" src="test-viewer-assets/out.png" alt="" >
+</li>
+</ul>
+</div>
+
+<div class="carousel">
+	<p>
+	<a class="attachment" href="test-viewer-assets/bootstrap-mdo-sfmoma-01.jpg" >carousel1</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+	</p>
+	<p>
+	<a class="attachment" href="test-viewer-assets/bootstrap-mdo-sfmoma-02.jpg" >carousel2</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+	</p>
+	<p>
+	<a class="attachment" href="test-viewer-assets/bootstrap-mdo-sfmoma-03.jpg" >carousel3</a>
+	<a href="test-viewer-assets/doggy.bmp" class="infolink" >
+		<img src="test-viewer-assets/attachment_small.png" border="0" alt="(info)" >
+	</a>
+	</p>
+</div>
+
+
+
+
+
+</div>
+</body>
+</html>
