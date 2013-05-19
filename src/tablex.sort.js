@@ -136,23 +136,36 @@ TableX.Sort = new Class({
 Array.implement({
 
 	/* comparison function for normalised arrays */
+	// a[0] contains the sortable value; a[1] the original value
+	// the sortable value is either a scalar or an array
+
 	cmp: function(a,b){
+
+		var aa, bb, i=0;
+
+		//retrieve the sortable value
 		a = a[0]; b = b[0];
-		var aa, bb, i= x = a.length - b.length;
+
+		//sortable value is a scalar - integer, float date, string
 		if( !a[0] ) return (a<b) ? -1 : (a>b) ? 1 : 0;
-		if( !x ) while( aa = a[i] ){
-			if(aa !== (bb=b[i++])) return (aa > bb) ? 1 : -1;
+		//if( !a[0] ){ a =[a]; b=[b]; }
+
+		// sortable value is an array of scalars
+		while( aa=a[i] ){
+			if( !bb=b[i++] ) return 1;
+			if( aa !== bb ) return (aa > bb) ? 1 : -1;
 		}
-		return x;
+		return b[i] ? -1:0;
 	},
 
 	naturalSort:function(){
-		var arr = this.makeSortable2();
-		arr = arr.sort( this.cmp );
-		return arr.map( function(item){ return item[1]; })
+
+		var arr = this.makeSortable();
+		return arr.sort( this.cmp ).map( function(item){ return item[1]; })
+
 	},
 
-	makeSortable2:function(){
+	makeSortable:function(){
 
 		var num = true, dmy=num, kmgt=num, empty=num, nat=num,
 			reKMGT = /([\d.,]+)\s*([kmgt])b/i,
@@ -165,12 +178,12 @@ Array.implement({
 
 			val = this[i];
 
-				num &= !isNaN(+val);
-				nat &= reNAT.test(val);
-				/* chrome accepts numbers as valid Dates -- so make sure non-digit chars are present */
-				dmy &= !isNaN(Date.parse(val))  && !num; //val.test(/[^\d]/);
-				kmgt &= reKMGT.test(val); //eg 2 MB, 4GB, 1.2kb, 8Tb
-				empty &= (val=='');
+			num &= !isNaN(+val);
+			nat &= reNAT.test(val);
+			/* chrome accepts numbers as valid Dates -- so make sure non-digit chars are present */
+			dmy &= !isNaN(Date.parse(val))  && !num; //val.test(/[^\d]/);
+			kmgt &= reKMGT.test(val); //eg 2 MB, 4GB, 1.2kb, 8Tb
+			empty &= (val=='');
 
 		};
 		console.log("num:"+num,"dmy:"+dmy,"kmgt:"+kmgt,"empty:"+empty,"nat:"+nat);
@@ -185,109 +198,27 @@ Array.implement({
 				val = val.toLowerCase().match(reKMGT) || [0,'0',''];
 				val = val[1].replace(/,/g,'').toFloat() * Math.pow(10, kmgtPower[ val[2] ] || 0);
 
+				//val.toFloat()*Math.pow(10, v
+
 			} else if( dmy ){
 
 				val = Date.parse( val );
 
 			} else if( nat ){
-				val = val.match(reNAT);
-				console.log("**natSort ",val);
+
+				val = val.match( reNAT );
 
 			} else if( num ){
 
-				val = +val; //.match(/\d+/)[0].toInt();
+				val = +val;
 
 			}
 
 			//return empty ? val.get('title') : val;  //checkme?
 			result[i]= [val, this[i]];
-			//console.log(val, result[i]);
 
 		};
-
-		console.log( result );
     	return result;
-
-	},
-
-	makeSortable:function(){
-
-		var num = true, flt=num, ddd=num, ip4=num, euro=num, kmgt=num, empty=num, nat=num,
-			reKMGT = /([\d.,]+)\s*([kmgt])b/,
-			kmgtPower = { m:3, g:6, t:9 },
-			reNAT = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g,
-			result = [];
-
-
-		this.each( function( v ){
-
-			if( v ){
-
-				v = v.clean().toLowerCase();
-
-				num &= v.test(/\d+/);
-
-				flt &= !isNaN(v.toFloat());
-				/* chrome accepts numbers as valid Dates -- so make sure non-digit chars are present */
-				ddd &= !isNaN(Date.parse(v))  && v.test(/[^\d]/);
-				ip4 &= v.test(/(?:\d{1,3}\.){3}\d{1,3}/); //169.169.0.1
-				//euro &= v.test(/^[£$€][\d.,]+/);
-				euro &= v.test(/^[\xa3$\u20ac][\d.,]+/);
-				kmgt &= v.test(reKMGT); //eg 2 MB, 4GB, 1.2kb, 8Tb
-				empty &= (v=='');
-
-				nat &= reNAT.test(v);
-console.log("*"+v+"*",nat, reNAT.test(v), v.match(reNAT));
-			}
-
-		});
-
-ip4=false;
-num=false;
-flt=false;
-		console.log( kmgt ? "kmgt" : euro ? "euro" : ip4 ? "ip4" : ddd ? "date" : flt ? "float" : num ? "num": "string", nat ? "nat" : "string" );
-
-		return this.map( function( val ){
-
-			if( kmgt ){
-
-				val = val.toLowerCase().match(reKMGT) || [0,'0',''];
-				val = val[1].replace(/,/g,'').toFloat() * Math.pow(10, kmgtPower[ val[2] ] || 0);
-
-			} else if( euro ){
-
-				val = val.replace(/[^\d.,]/g,'').toFloat();
-/*
-			} else if( ip4 ){
-
-				val = val.split( '.' );
-				val = ( (val[0].toInt() * 256 + val[1].toInt() ) * 256 + val[2].toInt() ) * 256 + val[3].toInt();
-*/
-			} else if( ddd ){
-
-				val = Date.parse( val );
-
-			} else if( flt ){
-
-				//val = val.match(/([+-]?\d+(:?\.\d+)?(:?e[-+]?\d+)?)/)[0].toFloat();
-				val = val.toFloat(); //parseFloat(val)
-
-			} else if( num ){
-
-				val = val.match(/\d+/)[0].toInt();
-
-			}
-
-			else if( nat ){
-				val = val.match(reNAT);
-				console.log("natSort ",val);
-			}
-
-			//return empty ? val.get('title') : val;  //checkme?
-			return val[0] ? val : [val];
-
-		});
-
 	}
 
 });

@@ -5,10 +5,10 @@
 
   <title>TABLEX visual test page</title>
 
-  <link href="../../templates/default/jspwiki.css" rel="stylesheet"/>
+  <link href="../../../templates/default/jspwiki.css" rel="stylesheet"/>
 
-  <script type="text/javascript" src="../mootools-core-1.4.5.js"></script>
-  <script type="text/javascript" src="../mootools-more-1.4.0.1.js"></script>
+  <script type="text/javascript" src="../../mootools-core-1.4.5.js"></script>
+  <script type="text/javascript" src="../../mootools-more-1.4.0.1.js"></script>
 
   <script>
     //String.Localization={ ..};
@@ -22,9 +22,9 @@
 	};
   </script>
 
-  <script type="text/javascript" src="../src/mooextend.js"></script>
-  <script type="text/javascript" src="../src/localize.js"></script>
-  <script type="text/javascript" src="../src/color.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/mooextend.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/localize.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/color.js"></script>
 
   <script type="text/javascript" src="../src/tablex.js"></script>
   <script type="text/javascript" src="../src/tablex.zebra.js"></script>
@@ -71,37 +71,51 @@ var hints = Object.map({
 });
 
 
-var spec, arr, result, check;
+var debug = true;
+function test(title, arr, validate){
+	var result = arr.naturalSort();
+	var eq = result.cmp(result,validate)==0 ? "OK":"NOK";
 
-spec = "Simple numerics", arr = ['10',9,2,'1','4']; check = ['1',2,'4',9,'10'];
-console.log(spec, arr, result = arr.naturalSort(), check, result==check );
+	if(debug){
+		console.log(eq+": "+title, arr, result, validate );
+	} else {
+		console.log(eq+": "+title );
+	}
 
-spec="Floats"; arr=['10.0401',10.022,10.042,'10.021999']; check=['10.021999',10.022,'10.0401',10.042];
-console.log(spec, arr, result = arr.naturalSort(), check );
+}
 
-spec="Float & decimal notation"; arr=['10.04f','10.039F','10.038d','10.037D']; check=['10.037D','10.038d','10.039F','10.04f'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Simple numerics",['10',9,2,'1','4'],['1',2,'4',9,'10']);
 
-spec="Scientific notation"; arr=['1.528535047e5','1.528535047e7','1.528535047e3']; check=['1.528535047e3','1.528535047e5','1.528535047e7'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Floats",['10.0401',10.022,10.042,'10.021999'],['10.021999',10.022,'10.0401',10.042]);
 
-spec="IP addresses"; arr=['192.168.0.100','192.168.0.1','192.168.1.1']; check=['192.168.0.1','192.168.0.100','192.168.1.1'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Float & decimal notation",['10.04f','10.039F','10.038d','10.037D'],['10.037D','10.038d','10.039F','10.04f']);
 
-spec="Filenames"; arr=['car.mov','01alpha.sgi','001alpha.sgi','my.string_41299.tif']; check=['001alpha.sgi','01alpha.sgi','car.mov','my.string_41299.tif'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Scientific notation",['1.528535047e5','1.528535047e7','1.528535047e3'],['1.528535047e3','1.528535047e5','1.528535047e7']);
 
-spec="Dates"; arr=['10/12/2008','10/11/2008','10/11/2007','10/12/2007']; check=['10/11/2007', '10/12/2007', '10/11/2008', '10/12/2008'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("IP addresses",['192.168.0.100','192.168.0.1','192.168.1.1'],['192.168.0.1','192.168.0.100','192.168.1.1']);
+test("IP addresses2",['100.100.100.100','256.100.100.100','10.100.100.100','1.100.25.100'],
+['1.100.25.100','10.100.100.100','100.100.100.100','256.100.100.100']);
 
-spec="Money"; arr=['$10002.00','$10001.02','$10001.01']; check=['$10001.01','$10001.02','$10002.00'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Filenames",['car.mov','01alpha.sgi','001alpha.sgi','my.string_41299.tif'],['001alpha.sgi','01alpha.sgi','car.mov','my.string_41299.tif']);
 
-spec="Movie Titles";
-arr=['1 Title - The Big Lebowski','1 Title - Gattaca','1 Title - Last Picture Show'];
-check=['1 Title - Gattaca','1 Title - Last Picture Show','1 Title - The Big Lebowski'];
-console.log(spec, arr, result = arr.naturalSort(), check );
+test("Mixed Strings", ['123asd','19asd','12345asd','asd123','asd12'],['19asd','123asd','12345asd','asd12','asd123']);
 
+test("Dates (dmy)",['10/12/2008','10/11/2008','10/11/2007','10/12/2007'],['10/11/2007', '10/12/2007', '10/11/2008', '10/12/2008']);
+
+test("Money",['$10002.00','$10001.02','$10001.01'],['$10001.01','$10001.02','$10002.00']);
+
+test("Movie Titles",
+	['1 Title - The Big Lebowski','1 Title - Gattaca','1 Title - Last Picture Show'],
+	['1 Title - Gattaca','1 Title - Last Picture Show','1 Title - The Big Lebowski']);
+
+test("Disk Memory (kgmt)",
+	['2Gb','4Kb','1.23Tb','2.73kb','0.4Tb'],
+	['2.73kb','4Kb','2Gb','0.4Tb','1.23Tb']);
+
+test("ERR-Array with ''",['10',9,2,'','1','4'],['','1',2,'4',9,'10']);
+
+test("ERR-Array with nulls",['10',9,2,null,'1','4'],['1',2,'4',9,'10']);
+test("ERR-Array with empty slots",['10',9,2,,'1','4'],['1',2,'4',9,'10']);
 
 
 	</script>
