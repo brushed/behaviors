@@ -36,12 +36,12 @@ TableX.Sort = new Class({
 
         if( table ){
             table.table.rows[0].addEvent('click:relay(th)', this.sort.bind(this) );
-            this.resetTH();
+            this.cleanTH();
         }
 
     },
 
-    resetTH: function(){
+    cleanTH: function(){
 
         var options = this.options;
         this.table.thead.set({'class': options.css.sort, title: options.hints.sort });
@@ -55,26 +55,31 @@ TableX.Sort = new Class({
     */
     sort: function( event ){
 
-        var table = this.table,
+        var options = this.options,
+            table = this.table,
             rows = table.rows,
             th = event.target,
-            options = this.options,
-            hints = options.hints,
-            css = options.css;
+            css = options.css,
             sortAtoZ = th.hasClass(css.atoz);
 
-        //console.log( ( sortAtoZ || th.hasClass(ztoa) ) ? "reverse" : "sort first time" );
-
-        table.refresh( sortAtoZ || th.hasClass(css.ztoa) ?
-            rows.reverse() :
-            rows.sort( this.makeSortable(rows, table.thead.indexOf(th)) )
+        //sort or reverse the table
+        table.refresh(
+            th.hasClass( css.sort ) ?
+                rows.naturalSort( table.thead.indexOf(th) ) :
+                rows.reverse()
         );
-
-        this.resetTH();
+        //reformat the header
+        this.cleanTH();
         sortAtoZ = sortAtoZ ? 'ztoa':'atoz';
-        th.swapClass(css.sort,css[sortAtoZ]).set('title', hints[sortAtoZ]);
+        th.swapClass(css.sort, css[sortAtoZ]).set('title', options.hints[sortAtoZ]);
 
-    },
+    }
+
+});
+
+
+
+!function(){
 
     /*
     Function: makeSortable
@@ -99,133 +104,137 @@ TableX.Sort = new Class({
     Returns:
         comparison function which can be used to sort the table
     */
+    function makeSortable(arr,column){
 
-    makeSortable: function(rows,column){
-
-        console.log(rows.length,column);
-
-        var sortable, cell, compareFn,
-            cache = 'cache'; //name of the cache attribute on each row
-
-        if( !rows[0][cache] || !rows[0][cache][column] ){
-
-            //convert the column to an array of sortable values
-            sortable = rows.map( function(row){
-                cell = row.cells[column];
-                return cell.getAttribute('data-sortby') || cell.get('text');
-            }).makeSortable();
-            compareFn = sortable.cmp;
-
-            //now cache the sortable data in row.cache[column]
-            rows.each( function(row, index){
-                if( !row[cache] ){ row[cache]=[]; }
-                //row.cache[column] = empty ? row.cells[column].get('title') : sortable[index];
-                row[cache][column] = sortable[index];
-            });
-
-            this.cmp[column] =
-
-            rows.cmp = function(a,b){
-                return compareFn( a[cache][column], b[cache][column] );
-            }
-
-        }
-        //rows.cmp = this.cmp[column];
-        return rows;
-
-    }
-});
-
-
-
-
-
-Array.implement({
-
-    naturalSort:function(){
-
-        var arr = this.makeSortable();  //to be cached
-        return arr.sort( this.cmp ).map( function(item){ return item[1]; })
-
-    },
-
-    makeSortable:function(){
-
-        var num = [], dmy=[], kmgt=[], nat=[],
-            val, i, len = this.length, result=[],
+        var num=[], dmy=[], kmgt=[], nat=[], val, i, len = arr.length, dom,
 
             //split string in sequences of digits, separated by ., and alpha-strings
             reNAT = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g,
-            //convert strings to numbers if possible
-            scalars = function(arr){
-                var val, i=0;
-                while( val = arr[i] ){ arr[i++] = +val||val; };
-                console.log(arr);
-                return arr;
-            },
 
-            reKMGT = /(:?[\d.,]+)\s*([kmgt])b/,    //eg 2 MB, 4GB, 1.2kb, 8Tb
-            kmgtFactor = { k:1, m:1e3, g:1e6, t:1e9 },
-            parseKMGT = function(val){
-                return reKMGT.test( val.toLowerCase() ) ?
-                    val.toFloat() * kmgtFactor[ RegExp.$2 ] :
-                    'x';//isNaN
+            KMGTre = /(:?[\d.,]+)\s*([kmgt])b/,    //eg 2 MB, 4GB, 1.2kb, 8Tb
+            KMGTmul = { k:1, m:1e3, g:1e6, t:1e9 },
+            KMGTparse = function( val ){
+                return KMGTre.test( val.toLowerCase() ) ?
+                    val.toFloat() * KMGTmul[ RegExp.$2 ] : NaN;
             };
 
         // guess the data type and convert to sortable values
-        // collect converted values in data-type arrays (num,kmgt,dmy,nat)
-        // if a value cannot be converted, set the data-type array to 'false'
+        // collect converted values in type specific arrays (num,kmgt,dmy,nat)
+        // if a value cannot be converted, set the type specific array to 'false'
         for( i=0; i<len; i++ ){
 
-            val = (''+this[i]).trim();
+            //FIXME:: empty ? val.get('title') : val;
+            val = arr[i];
+            dom = val && val.getChildren; // typeOf(val)=='element'
+            if( !isNaN(column) ) val = (dom ? val.getChildren() : val)[column];
+            val = (dom ? val.get('text') || val.get('title') :''+val).trim();
+            //console.log(val);
 
             if( num && isNaN( num[i] = +val ) ) num=0;
+            //if( num && (val.charAt(0)=='0') ) num[i] = val; //keep string value when left padded with '0'
+
             if( nat && !( nat[i] = val.match(reNAT) ) ) nat=0;
-            //if(nat) console.log("**nat**",nat[i]);
-            /* chrome accepts numbers as valid Dates -- so check for non-numeric chars */
-            //if( dmy && ( num || isNaN( dmy[i] = Date.parse(val) ) ) ) dmy=0;
+
+            //Note: chrome accepts numbers as valid Dates -- so accept only strings with non-numeric chars
+            //Known limitation: Date.parse also accepts "<any string>MM" or "<any string>YYYY"
             if( dmy && ( num || isNaN( dmy[i] = Date.parse(val) ) ) ) dmy=0;
-            if( kmgt && isNaN( kmgt[i] = parseKMGT(val) ) ) kmgt=0;
+
+            if( kmgt && isNaN( kmgt[i] = KMGTparse(val) ) ) kmgt=0;
 
         };
-        console.log("****", kmgt? "kmgt" : dmy ? "dmy" : num ? "num" : nat ? "nat": 'no conversion', "****");
-        result = kmgt || dmy || num || nat || this;
 
-        // make a sortable array:
-        // [0] = sortable value or array
-        // [1] = original value
-        for( i=0; i<len; i++ ) result[i] = [ scalars( result[i] ), this[i] ];
-        return result;
+        console.log("[",kmgt?"kmgt":dmy?"dmy":num?"num":nat?"nat":'no conversion',"] ", kmgt||dmy||num||nat||arr);
 
-        //empty ? val.get('title') : val;  //checkme?
-    },
+        return kmgt || dmy || num || nat || arr;
 
-
-    // Comparison function for sorting "natural sortable" arrays
-    // - a[0] contains the sortable value;
-    // - a[1] the original value
-    // The sortable value is either a scalar or an array
-    cmp: function(a,b){
-
-        var aa, bb, i=0;
-
-        // retrieve the sortable values: scalars or tokenized arrays
-        a = a[0]; b = b[0];
-
-        // scalars - integer, float date, string
-        if( !a[0] ) return (a<b) ? -1 : (a>b) ? 1 : 0;
-
-        // array of strings or numbers
-        while( aa=a[i] ){
-            if( !( bb=b[i++] ) ) return 1;
-            //when comparing numbers and strings: fallback to string comparison
-            if( isNaN(aa-bb) ){ aa+='';bb+=''; }
-            if( aa !== bb ) return (aa > bb) ? 1 : -1;
-        }
-        return b[i] ? -1:0;
     }
 
+    /*
+    Function: cmp
+        Comparison function for sorting "natural sortable" arrays.
+        The entries of sortable arrays consists of tupples:
+        ( .[1] is the sortable value, .[0] is the original value )
+
+        The sortable value is either a scalar or an array.
+    */
+    function naturalCmp(a,b){
+
+        var aa, bb, i=0, t;
+
+        // retrieve the sortable values: scalars or tokenized arrays
+        a = a[1]; b = b[1];
+
+        // scalars, always same types - integer, float, date, string
+        if( typeof a !='object' ) return (a<b) ? -1 : (a>b) ? 1 : 0;
+        //if( !a.length ) return a.localeCompare(b);
+
+        while( aa = a[i] ){
+
+            if( !( bb = b[i++] ) ) return 1; //fixme
+
+            t = aa - bb;       //auto-conversion to numbers, if possible
+            if( t ) return t;  //otherwise fall-through to string comparison
+            //if( t && aa.charAt(0)!='0' && bb.charAt(0)!='0' ) return t;  //padded string '001' < '01'
+
+            if( aa !== bb ) return (aa > bb) ? 1 : -1;
+            //if( aa !== bb ) return aa.localeCompare(bb);
+
+        }
+        return b[i] ? -1 : 0;
+    }
+
+    /*
+    Function: naturalSort
+        Sorts the elements of an array, using a more 'natural' algoritm.
+        Maintains a cache of the prepared sortable array.
+
+    Example:
+        [0, 1, "017", 6, , 21 ].naturalSort();  //[0, 1, 6, "017", 21]
+
+        rows.naturalSort( 3 );
+
+    */
+    Array.implement('naturalSort',function(column, force){
+
+        var self = this,
+            cache = 'cache',
+            sortable = self[cache] || [],
+            hasColumn = (typeof column == 'number'),
+            result = [], i, len = self.length;
+
+if(sortable.length) console.log("CACHED>> ", sortable );
+
+        if( hasColumn ){
+
+            sortable = sortable[column] || [];
+
+            if( !sortable.length/*==0*/ || force ){
+                console.log("build a new cache ", self, column);
+                if( !self[cache] ) self[cache] = sortable;  //cache===[]
+                self[cache][column] = sortable = makeSortable(self, column);
+            }
+
+        } else {
+
+            if( !sortable.length/*==0*/ || column ){  //column===force flag in this case
+                //console.log("build a new cache ", self, column);
+                self[cache] = sortable = makeSortable(self);
+            }
+
+        }
+if(sortable.length) console.log("SORTABLE>> ", sortable );
 
 
-});
+        //wrap [sortable-value] into [item, sortable-value]
+        for( i=0; i<len; i++) result[i] = [ self[i], sortable[i] ];
 
+        result.sort( naturalCmp );
+
+        //unwrap sorted items
+        for( i=0; i<len; i++) self[i] = result[i][0];
+
+        return self;
+
+    });
+
+}();
