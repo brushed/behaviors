@@ -1,6 +1,8 @@
 Dynamic Styles
 ==============
 
+Alpha - work in progress / use at your own risk
+
 Dynamic styles provide advanced styling possibilities for your html elements.
 Dynamic Styles add dynamic behavior to standard dom elements.
 The supporting javascript routines are typically initialized at page load.
@@ -14,59 +16,41 @@ The supporting javascript routines are typically initialized at page load.
 
 ----
 
-- Collapsible
-	Turn ordinary lists into collapsible trees. See Collapsible List
+- Collapsible : turn ordinary lists into collapsible trees and boxes.
 	- Collapsible
-	- Collapsible.List
-		A collapsible list has clickable list-items, to expand of collapse.
-	- Collapsbile.Box
-		A collapsible box has a header and a body, which slides in/out vertically.
+	- Collapsible.List : make clickable list-items, to expand of collapse.
+	- Collapsbile.Box : with header and body, which slides in/out vertically.
 
 - File-upload (todo)
 
-- Graph-bars
-	Add horizontal or vertical graph bars to your html pages and tables.
+- Graph-bars : horizontal or vertical graph bars inline or inside tables.
 
-- Reflect
-	Generates a reflection at the bottom of an image.
+- Reflect : generates a reflection at the bottom of an image.
 
-- TableX
-	Enrich your tables with extended functionalities.
+- TableX : enrich your tables with extended functionalities.
 	- Tablex
-	- Tablex.Sort
-		Convert ordinary html tables into sortable tables.
-	- Tablex.Filter
-		Support advanced filtering and highlighting of table rows, and columns.
-	- Tablex.Zebra
-		Add alternate row colors to your tables.
-	- Tablex.GroupBy
+	- Tablex.Sort : convert ordinary html tables into sortable tables.
+	- Tablex.Filter : add advanced filtering and highlighting of table rows, and columns.
+	- Tablex.Zebra : add alternate row colors to your tables.
+	- Tablex.GroupBy : group table rows per column  (todo)
+	- Tablex.Selector : select cells to calcualte sum, avg, min, max  (todo)
 
-- Tabs  (todo)
-	Create tabular sections in html pages.
-	- TabbedAccordion
-		Generates a tabbed section, with smooth transition effects based on accordion.
-	- Accordion
-		Generates vertical accordions.
+- Tabs  (todo) : create tabular sections in html pages.
+	- TabbedAccordion: generates tabbed sections, with smooth transition effects based on accordion.
+	- Accordion : generates vertical accordions.
 
 - Viewer
-	- Viewer
-		Allows to embed a video-player in a html page, by referring to the
-		full url.  (supports eg. youtube, vimeo, ..., external content )
-	- Viewer.Carousel
-		Embed a rich media viewer with support to cycle through a set of
+	- Viewer : embed a video-player in a html page, by referring to the
+		full url. With support for eg. youtube, vimeo, ..., external content.
+	- Viewer.Carousel: embed a rich media viewer with support to cycle through a set of
 		images, video, external content.
 		Unlike slimbox, the content is directly visible on the page.
-	- Viewer.Slimbox
-		Generates a modal overlay box with a rich media viewer (eg. lightbox)
+	- Viewer.Slimbox : generates a modal overlay box with a rich media viewer (eg. lightbox)
 		to view one or more images, video, or external content.
 
 
 - Other dynamic styles (not included)
-	- Wiki.Category
-		Generates pop up's with a list of pages referenced by the category page.
-	- Tips
-		Generates a transparent fly-over tip with additional info. Based on Mootools.More.Tip
-	- Columns  (ref. Wiki.D-Styles)
-		Format text in multi-column news-paper format.
-	- Prettify
-		Add code-coloring to a preformatted block of text. See Prettify Sourcecode
+	- Wiki.Category : generates pop up's with a list of pages referenced by the category page.
+	- Tips : generates a transparent fly-over tip with additional info. Based on Mootools.More.Tip
+	- Columns : (ref. Wiki.D-Styles) format text in multi-column news-paper format.
+	- Prettify : add code-coloring to a preformatted block of text. See Prettify Sourcecode

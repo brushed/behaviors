@@ -59,7 +59,7 @@ Viewer.Slimbox = new Class({
         }
 
         $(document.body).grab([
-            'div.slmbx', { attach:[self/*,'element'*/] }, [
+            'div.slmbx', { attach:self/*[self,'element']*/ }, [
                 'div.modal',{ events:{ click:clickFn } },
                 'div.viewport', { attach:[self,'viewport'], events:{ 'click:relay(a)':clickFn } }, [
                     //insert viewable iframe/object/img ...

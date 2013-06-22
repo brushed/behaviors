@@ -75,7 +75,8 @@ this.Viewer = {
         //console.log("PRELOAD ", typeOf( preload ), preload );
 
     },
-        preloads:function(elements, options, callback){
+
+    preloads:function(elements, options, callback){
 
         var countdown = elements.length,
             preloads = [],
