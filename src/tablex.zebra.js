@@ -12,26 +12,25 @@ Usage:
 */
 TableX.Zebra = function(table, options){
 
+    function stripe(){
+
+        this.rows.filter( Element.isVisible ).each( function(row,j){
+
+            j &= 1; //0,1,0,1...
+            if( isArr ){
+                row.setStyle('background-color', colors[j]||'');
+            } else {
+                row.ifClass(j, 'odd');
+            }
+        });
+    };
+
     var colors = options.colors,
+        isArr = colors.length;
 
-        stripe = function(){
-
-            this.rows.filter( Element.isVisible ).each( function(row,j){
-                j &= 1;
-                if( colors[0] ){
-                    row.setStyle('background-color', colors[j]||'');
-                } else {
-                    row.ifClass(j, colors);
-                }
-            });
-        };
-
-    colors = ( !colors[0] || colors[0]=='table' ) ?
-        'odd' :
-        colors.map( function(c){ return new Color(c); });
+    if ( !isArr ) colors = colors.map( function(c){ return new Color(c); });
 
     //console.log("ZEBRA ",options.colors, colors[0],colors[1]);
-
     stripe.call( new TableX(table, { onRefresh:stripe }) );
 
 }
