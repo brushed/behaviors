@@ -4,10 +4,6 @@ Class: TableX
     Used by TableX.Sort, TableX.Zebra, ...
 
 
-Credit:
-    Filters inspired by http://www.codeproject.com/jscript/filter.asp  and
-    http://sunnywalker.github.io/jQuery.FilterTable/filtertable-sample.html
-
 Usage:
     > var t = new TableX(table-element);
     Creates maximum one TableX instance per table DOM element.
@@ -47,11 +43,15 @@ var TableX = new Class({
     refresh: function(rows){
 
         if( rows ){
-            var    frag = document.createDocumentFragment();
+
+            var frag = document.createDocumentFragment();
             rows.each( function(r){ frag.appendChild(r); });
             this.table.appendChild(frag);
+
         }
+
         this.fireEvent('refresh');
+
     },
 
     /*

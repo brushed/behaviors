@@ -104,9 +104,9 @@ TableX.Sort = new Class({
     Returns:
         comparison function which can be used to sort the table
     */
-    function makeSortable(arr,column){
+    function makeSortable(array, column){
 
-        var num=[], dmy=[], kmgt=[], nat=[], val, i, len = arr.length, dom,
+        var num=[], dmy=[], kmgt=[], nat=[], val, i, len = arr.length, isNode,
 
             //split string in sequences of digits, separated by ., and alpha-strings
             reNAT = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g,
@@ -118,24 +118,29 @@ TableX.Sort = new Class({
                     val.toFloat() * KMGTmul[ RegExp.$2 ] : NaN;
             };
 
-        // guess the data type and convert to sortable values
-        // collect converted values in type specific arrays (num,kmgt,dmy,nat)
-        // if a value cannot be converted, set the type specific array to 'false'
+
         for( i=0; i<len; i++ ){
 
-            //FIXME:: empty ? val.get('title') : val;
-            val = arr[i];
-            dom = val && val.getChildren; // typeOf(val)=='element'
-            if( !isNaN(column) ) val = (dom ? val.getChildren() : val)[column];
-            val = (dom ? val.get('text') || val.get('title') :''+val).trim();
+            //1. Retrieve the value to be sorted: native js value, or dom elements
+
+            val = array[i];
+            isNode = val && val.nodeType;
+
+            //if 'column' => retrieve the nth DOM-element or the nth Array-item
+            if( !isNaN(column) ) val = ( isNode ? val.getChildren() : val )[column];
+
+            //retrieve the value and convert to string
+            val = (''+(isNode ? val.get('text') || val.get('title') : val)).trim();
             //console.log(val);
 
+
+            //2. Convert and store in type specific arrays (num,dmy,kmgt,nat)
+
             if( num && isNaN( num[i] = +val ) ) num=0;
-            //if( num && (val.charAt(0)=='0') ) num[i] = val; //keep string value when left padded with '0'
 
             if( nat && !( nat[i] = val.match(reNAT) ) ) nat=0;
 
-            //Note: chrome accepts numbers as valid Dates -- so accept only strings with non-numeric chars
+            //Only strings with non-numeric values
             //Known limitation: Date.parse also accepts "<any string>MM" or "<any string>YYYY"
             if( dmy && ( num || isNaN( dmy[i] = Date.parse(val) ) ) ) dmy=0;
 
@@ -143,9 +148,9 @@ TableX.Sort = new Class({
 
         };
 
-        console.log("[",kmgt?"kmgt":dmy?"dmy":num?"num":nat?"nat":'no conversion',"] ", kmgt||dmy||num||nat||arr);
+        console.log("[",kmgt?"kmgt":dmy?"dmy":num?"num":nat?"nat":'no conversion',"] ", kmgt||dmy||num||nat||array);
 
-        return kmgt || dmy || num || nat || arr;
+        return kmgt || dmy || num || nat || array;
 
     }
 
@@ -199,7 +204,7 @@ TableX.Sort = new Class({
         var self = this,
             cache = 'cache',
             sortable = self[cache] || [],
-            hasColumn = (typeof column == 'number'),
+            hasColumn = !isNaN(column), //(typeof column == 'number'),
             result = [], i, len = self.length;
 
 if(sortable.length) console.log("CACHED>> ", sortable );
@@ -210,8 +215,12 @@ if(sortable.length) console.log("CACHED>> ", sortable );
 
             if( !sortable.length/*==0*/ || force ){
                 console.log("build a new cache ", self, column);
-                if( !self[cache] ) self[cache] = sortable;  //cache===[]
                 self[cache][column] = sortable = makeSortable(self, column);
+                for(i=0;i<len;i++){
+                    t = self[i];
+                    if(t[cache]) t[cache] = [];
+                    t[cache][column] = sortable[i];
+                }
             }
 
         } else {
@@ -219,6 +228,7 @@ if(sortable.length) console.log("CACHED>> ", sortable );
             if( !sortable.length/*==0*/ || column ){  //column===force flag in this case
                 //console.log("build a new cache ", self, column);
                 self[cache] = sortable = makeSortable(self);
+                for(i=0;i<len;i++) self[i][cache] = sortable[i];
             }
 
         }
@@ -226,7 +236,8 @@ if(sortable.length) console.log("SORTABLE>> ", sortable );
 
 
         //wrap [sortable-value] into [item, sortable-value]
-        for( i=0; i<len; i++) result[i] = [ self[i], sortable[i] ];
+        for( i=0; i<len; i++) result[i] = [ self[i], self[i][cache] ];
+        for( i=0; i<len; i++) result[i] = [ self[i], self[i][cache][column] ];
 
         result.sort( naturalCmp );
 

@@ -4,8 +4,8 @@ Class: TableX.Filter
     Filtering happens both on column and row basis.
 
 Credits:
-    Inspired by jquery.filterTable by Sunny Walker,
-    http://sunnywalker.github.io/jQuery.FilterTable/
+    Filters inspired by http://www.codeproject.com/jscript/filter.asp  and
+    jquery.filterTable by Sunny Walker http://sunnywalker.github.io/jQuery.FilterTable/
 
 */
 TableX.Filter = new Class({
@@ -14,7 +14,7 @@ TableX.Filter = new Class({
 
     options :{
         minSize: 8,  //don't show the filter on tables with less than this number of rows
-        shortcut: 'a.btn[href="#"][text="{0}"]', //shortcut template
+        shortcut: 'a.btn[href="#"][text="{0}"]', //template for shortcut filter-strings
         list: [],  //list of shortcuts to quickly filter the table
         hint: 'filter this table',  //HTML5 placeholder text for the filter field
         highlight: 'highlight'  //class applied to cells containing the filter term
