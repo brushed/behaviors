@@ -38,15 +38,16 @@ TableX.Sort = new Class({
         this.table = table = new TableX(table,{ minSize: 3 });
 
         if( table ){
-            table.thead.addEvent('click:relay(th)', this.sort.bind(this) );
-            this.cleanTH(); //format the header row
+            //table.table.rows[0].addEvent( 'click:relay(th)', this.sort.bind(this) );
+            table.thead.addEvent( 'click', this.sort.bind(this) );
+            this.style( table.thead, 'sort' );
         }
 
     },
 
-    cleanTH: function(){
+    style: function(element, newStyle){
 
-        this.table.thead.set({'class': this.options.css.sort, title: this.options.hints.sort });
+        element.set({'class': this.options.css[newStyle], title: this.options.hints[newStyle] });
 
     },
 
@@ -65,8 +66,8 @@ TableX.Sort = new Class({
                 rows.reverse()
         );
 
-        this.cleanTH();  //reformat the header row
-        th.swapClass(css.sort, css[sortAtoZ]).set('title', this.options.hints[sortAtoZ]);
+        this.style( table.thead, 'sort');
+        this.style( th, sortAtoZ );
 
     }
 
