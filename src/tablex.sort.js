@@ -38,32 +38,25 @@ TableX.Sort = new Class({
         this.table = table = new TableX(table,{ minSize: 3 });
 
         if( table ){
-            table.table.rows[0].addEvent('click:relay(th)', this.sort.bind(this) );
-            this.cleanTH();
+            table.thead.addEvent('click:relay(th)', this.sort.bind(this) );
+            this.cleanTH(); //format the header row
         }
 
     },
 
     cleanTH: function(){
 
-        var options = this.options;
-        this.table.thead.set({'class': options.css.sort, title: options.hints.sort });
+        this.table.thead.set({'class': this.options.css.sort, title: this.options.hints.sort });
 
     },
 
-    /*
-    Function: sort
-        Click event-handler, to perform a sort based on the clicked column header.
-
-    */
     sort: function( event ){
 
-        var options = this.options,
-            table = this.table,
+        var table = this.table,
             rows = table.rows,
+            css = this.options.css,
             th = event.target,
-            css = options.css,
-            sortAtoZ = th.hasClass(css.atoz);
+            sortAtoZ = th.hasClass(css.atoz) ? 'ztoa':'atoz';
 
         //sort or reverse the table
         table.refresh(
@@ -71,10 +64,9 @@ TableX.Sort = new Class({
                 rows.naturalSort( table.thead.indexOf(th) ) :
                 rows.reverse()
         );
-        //reformat the header
-        this.cleanTH();
-        sortAtoZ = sortAtoZ ? 'ztoa':'atoz';
-        th.swapClass(css.sort, css[sortAtoZ]).set('title', options.hints[sortAtoZ]);
+
+        this.cleanTH();  //reformat the header row
+        th.swapClass(css.sort, css[sortAtoZ]).set('title', this.options.hints[sortAtoZ]);
 
     }
 
