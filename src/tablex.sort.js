@@ -4,7 +4,7 @@ Class: TableX.Sort
     CSS classes are added to the header depending on the sort order.
     The data-type of each column is auto-recognized.
 
-    Todo: add spinner while sorting
+    Todo: add progress animation while sorting
 
 Depends:
     Array.naturalSort
@@ -46,27 +46,26 @@ TableX.Sort = new Class({
     },
 
     style: function(element, newStyle){
-
-        element.set({'class': this.options.css[newStyle], title: this.options.hints[newStyle] });
-
+        var options = this.options;
+        element.set({'class': options.css[newStyle], title: options.hints[newStyle] });
     },
 
     sort: function( event ){
 
         var table = this.table,
+            thead = table.thead,
             rows = table.rows,
             css = this.options.css,
             th = event.target,
             sortAtoZ = th.hasClass(css.atoz) ? 'ztoa':'atoz';
 
-        //sort or reverse the table
+        this.style(th, "processing");
         table.refresh(
             th.hasClass( css.sort ) ?
-                rows.naturalSort( table.thead.indexOf(th) ) :
+                rows.naturalSort( thead.indexOf(th) ) :
                 rows.reverse()
         );
-
-        this.style( table.thead, 'sort');
+        this.style( thead, 'sort');
         this.style( th, sortAtoZ );
 
     }

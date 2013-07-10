@@ -32,7 +32,7 @@ Viewer.Slimbox = new Class({
         loop: true,
         width: 800, // Initial width of the box (in pixels)
         height: 600, // Initial height of the box (in pixels)
-        text: {
+        hints: {
             close: '&times;',
             next: 'Next', //&#171;
             prev: 'Previous', //&#187;
@@ -49,24 +49,23 @@ Viewer.Slimbox = new Class({
     initialize: function(options){
 
         var self = this.setOptions(options),
-            texts = self.options.text;
+            hints = self.options.hints;
 
         function clickFn(){
             if( this.match('.next')){ self.update(1); }
             else if( this.match('.prev')){ self.update(-1); }
-            else { self.attach(/*O=close*/); }
-
+            else { self.attach( /*O=close*/ ); }
         }
 
         $(document.body).grab([
-            'div.slmbx', { attach:self/*[self,'element']*/ }, [
-                'div.modal',{ events:{ click:clickFn } },
+            'div.slmbx', { attach:self/*[self,'element'] contains the slimbox dialog box*/ }, [
+                'div.modal',{ events:{ click:clickFn } }, //semi transparent overlay
                 'div.viewport', { attach:[self,'viewport'], events:{ 'click:relay(a)':clickFn } }, [
                     //insert viewable iframe/object/img ...
                     'a.info.caption',
-                    'a.info.next',  { html:texts.next },
-                    'a.info.prev',  { html:texts.prev },
-                    'a.info.close', { html:texts.close }
+                    'a.info.next',  { html:hints.next },
+                    'a.info.prev',  { html:hints.prev },
+                    'a.info.close', { html:hints.close }
                 ]
             ]
         ].rendAr());
@@ -99,12 +98,13 @@ Viewer.Slimbox = new Class({
     Arguments:
         elements - set of DOM elements
     Return
-        set of clickable media elements
+        set of clickable (viewable) elements
     */
     watch: function(elements){
         var self = this;
 
-        /*elements = $$(elements).filter( function(el){
+        /*safety net
+        elements = $$(elements).filter( function(el){
             return self.match( el.src || el.href );
         });*/
         return elements.each( function(el,idx){
@@ -221,7 +221,7 @@ Viewer.Slimbox = new Class({
 
         self.get('.caption').set({
             href: url,
-            html: options.text.info.xsubs(
+            html: options.hints.info.xsubs(
                 /*index*/ many ? (cursor+1)+"/"+max : "",
                 /*name*/ el.get('title')/*||''*/
             )
@@ -251,7 +251,7 @@ Viewer.Slimbox = new Class({
 
         self.preload = preload;
 
-        caption.set('html', caption.get('html') + self.options.text.size.xsubs(height,width) );
+        caption.set('html', caption.get('html') + self.options.hints.size.xsubs(height,width) );
 
         // viewport has css set to { top:50%, left:50% } for automatic centered positioning
         viewport

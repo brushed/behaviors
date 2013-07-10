@@ -29,7 +29,7 @@ var TableX = new Class({
             table.TableX = self = this;
             self.table = table;
             self.thead = $(table.rows[0]).getChildren('th');
-            self.rows = $$(Array.slice(table.rows, self.thead.length>0 ? 1 : 0));
+            self.rows  = $$(Array.slice(table.rows, self.thead.length>0 ? 1 : 0));
             self.cells = table.getElements('td'); //fixme: check for nested tables
 
         }
@@ -55,7 +55,7 @@ var TableX = new Class({
     },
 
     /*
-    Function: getTableValues
+    Function: filter
         Fetch set of gBar values from a table
         * check first-row to match field-name: return array with col values
         * check first-column to match field-name: return array with row values
@@ -63,7 +63,7 @@ var TableX = new Class({
 
     FIXME
     */
-    getTableValues: function(fieldName){
+    filter: function(fieldName){
 
         var rows = this.rows,
             tlen = rows.length, h, l, r, result=[], i;

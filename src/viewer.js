@@ -29,9 +29,9 @@ this.Viewer = {
     },
 
 
-    preload: function(url, options, callback ){
+    preload: function(element, options, callback ){
 
-        var match = this.match(url, options),
+        var match = this.match(element, options),
             preload;
 
         function done(){
@@ -62,7 +62,7 @@ this.Viewer = {
         } else if( match.src ){
 
             preload = new IFrame( Object.merge( options, match, { frameborder:0 } ) );
-            //The iframe loading actually starts only the iframe is added to the dom
+            //The iframe loading actually starts only when the iframe is added to the dom
             document.body.adopt(preload);
 
         } else {
@@ -80,8 +80,8 @@ this.Viewer = {
 
         var countdown = elements.length,
             preloads = [],
-            w=0,
-            h=0;
+            w = options.width, //0,
+            h = options.height; //0;
 
         if( !countdown ) return this.preload(elements, options, callback);
 
@@ -90,8 +90,8 @@ this.Viewer = {
             this.preload(elements.shift(), options, function(preload, width, height){
 
                 preloads.push( preload );
-                w = w.max(width);
-                h = h.max(height);
+                w = w.min(width);
+                h = h.min(height);
                 console.log( preloads.length,w,width,h,height, countdown==1?'done':'');
 
                 if( !--countdown && callback ) callback( preloads, w, h );

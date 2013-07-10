@@ -20,8 +20,7 @@ Element.implement({
             img.unreflect();
 
             function doReflect(){
-                //var reflection, reflectionHeight = Math.floor(img.height * oHeight), wrapper, context, gradient;
-                var reflection, reflectionHeight = (img.height * oHeight)+.5|0 /*floor*/, wrapper, context, gradient;
+                var reflection, reflectionHeight = Math.floor(img.height * oHeight), wrapper, context, gradient;
 
                 if (Browser.ie) {
                     reflection = new Element("img", {src: img.src, styles: {

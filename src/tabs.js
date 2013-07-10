@@ -77,10 +77,10 @@ var Tab = new Class({
 
                 .getChildren('[class^='+options.pane+']').each( function(pane){
 
-                    name = pane.className.slice(4).deCamelize();         //remove tab-prefix,  fixme slice(n)
-                    if( !pane.id || (pane.id=="") ){ pane.id = name; }    //allow hashed tabs -ffs
+                    name = pane.className.slice(4).deCamelize();         //remove tab-prefix
+                    if( !pane.id || (pane.id=="") ){ pane.id = name; }   //allow hashed tabs -ffs
 
-                    pane.grab( new Element('div.clearbox') ); //checkme: is this still needed, replaced by .clearfix in css?
+                    pane.grab( new Element('div.clearbox') ); //checkme: replaced by .clearfix in css?
 
                     nav.grab( new Element('a', {text:name})    );
 

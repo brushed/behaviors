@@ -11,114 +11,582 @@
   <script type="text/javascript" src="../../mootools-more-1.4.0.1.js"></script>
 
   <script>
-    //String.Localization={ ..};
-    //String.Localization.extend({ ..});
-	LocalizedStrings = {
-		"javascript.filter.all":"(All)" ,
-		"javascript.sort.click":"Click to sort",
-		"javascript.sort.ascending":"Ascending order. Click to reverse",
-		"javascript.sort.descending":"Descending order. Click to reverse",
-		"javascript.filter.hint":"Filter this beautiful table"
-	};
+
+    var I18N = {
+        "javascript.filter.all":"(All)" ,
+        "javascript.sort.click":"Click to sort",
+        "javascript.sort.ascending":"Ascending order. Click to reverse",
+        "javascript.sort.descending":"Descending order. Click to reverse",
+        "javascript.filter.hint":"Filter this beautiful table"
+    };
   </script>
 
-  <script type="text/javascript" src="../../mooextend/src/mooextend.js"></script>
-  <script type="text/javascript" src="../../mooextend/src/localize.js"></script>
-  <script type="text/javascript" src="../../mooextend/src/color.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/String.Extend.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/Localize.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/Color.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/Array.Extend.js"></script>
+  <script type="text/javascript" src="../../mooextend/src/Array.NaturalSort.js"></script>
 
-  <script type="text/javascript" src="../src/tablex.js"></script>
-  <script type="text/javascript" src="../src/tablex.zebra.js"></script>
-  <script type="text/javascript" src="../src/tablex.sort.js"></script>
-  <script type="text/javascript" src="../src/tablex.filter.js"></script>
-  <script type="text/javascript" src="../src/tablex.groupby.js"></script>
+  <script type="text/javascript" src="../src/Tablex.js"></script>
+  <script type="text/javascript" src="../src/Tablex.Zebra.js"></script>
+  <script type="text/javascript" src="../src/Tablex.Sort.js"></script>
+  <script type="text/javascript" src="../src/Tablex.Filter.js"></script>
+  <script type="text/javascript" src="../src/Tablex.GroupBy.js"></script>
 
   <style>
-	body { margin:1em;}
-	table { margin:0 1em 2em 0; }
+    body { margin:1em;}
+    table { margin:0 1em 2em 0; }
   </style>
 
   <script type="text/javascript">
+
 
 window.addEvent('domready', function(){
 
 
 var hints = Object.map({
-	sort: "sort.click",
-	atoz: "sort.ascending",
-	ztoa: "sort.descending",
-	all: "filter.all",
-	filter: "filter.hint"
+    sort: "sort.click",
+    atoz: "sort.ascending",
+    ztoa: "sort.descending",
+    all: "filter.all",
+    filter: "filter.hint"
 },String.localize);
 
-	$$('.sortable table').each(function(element){
-		new TableX.Sort(element, {hints: hints})
-	});
+    $$('.sortable table').each(function(element){
+        new TableX.Sort(element, {hints: hints})
+    });
 
-	$$('.table-filter table').each(function(element){
-		new TableX.Filter(element,{list:['one$','James'], hint:hints.filter});
-	});
+    $$('.table-filter table').each(function(element){
+        new TableX.Filter(element,{list:['one$','James'], hint:hints.filter});
+    });
 
-	$$('.zebra,div[class*=zebra-]').each(function(element){
+    $$('.zebra,div[class*=zebra-]').each(function(element){
 
-		var args = 'zebra'.sliceArgs(element);
-		element.getElements('table').each(function(table){
-			new TableX.Zebra(table, { colors:args });
-		});
+        var args = 'zebra'.sliceArgs(element);
+        element.getElements('table').each(function(table){
+            new TableX.Zebra(table, { colors:args });
+        });
 
-	});
+    });
 
 
 });
 
 
-var debug = true;
-function test(title, arr, validate){
-	var result = arr.naturalSort();
-	var eq = result.cmp(result,validate)==0 ? "OK":"NOK";
-
-	if(debug){
-		console.log(eq+": "+title, arr, result, validate );
-	} else {
-		console.log(eq+": "+title );
-	}
-
+/*
+Mini Test suite for Natural Sorting algortihm
+*/
+var debug = false;
+function suite(title, fn){
+    console.log('\n**** '+title+' ****');
+    fn();
+}
+function compare(arr1,arr2){
+    if (arr1.length != arr2.length) return false;
+    for (var i = 0, len = arr2.length; i < len; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
 }
 
-test("Simple numerics",['10',9,2,'1','4'],['1',2,'4',9,'10']);
+function doTest(origArray, sortArray, title) {
 
-test("Floats",['10.0401',10.022,10.042,'10.021999'],['10.021999',10.022,'10.0401',10.042]);
+    try {
+        var result = origArray.naturalSort();
+        var eq = compare(result,sortArray) ? "OK":"NOK";
 
-test("Float & decimal notation",['10.04f','10.039F','10.038d','10.037D'],['10.037D','10.038d','10.039F','10.04f']);
+    } catch(e) {
+        console.log("!ERROR: ",title,e); return;
+    }
 
-test("Scientific notation",['1.528535047e5','1.528535047e7','1.528535047e3'],['1.528535047e3','1.528535047e5','1.528535047e7']);
+    if(!debug && eq=="OK"){
+        console.log(eq+": "+title );
+    } else {
+        console.log(eq+": "+title,"\nInput:  ", origArray ,"\nOutput: ",result,"\nExpected:", sortArray );
+    }
+}
 
-test("IP addresses",['192.168.0.100','192.168.0.1','192.168.1.1'],['192.168.0.1','192.168.0.100','192.168.1.1']);
-test("IP addresses2",['100.100.100.100','256.100.100.100','10.100.100.100','1.100.25.100'],
-['1.100.25.100','10.100.100.100','100.100.100.100','256.100.100.100']);
+/*
+Based on: js-naturalsort test suite  https://github.com/overset/javascript-natural-sort
+*/
+suite('disk memory values', function () {
+    doTest(
+        ['2Gb','4Kb','1.23Tb','2.73kb','0.4Tb'],
+        ['2.73kb','4Kb','2Gb','0.4Tb','1.23Tb'],
+        "Disk Memory (kgmt)");
+});
 
-test("Filenames",['car.mov','01alpha.sgi','001alpha.sgi','my.string_41299.tif'],['001alpha.sgi','01alpha.sgi','car.mov','my.string_41299.tif']);
+suite('different values types', function () {
+    doTest(
+        ["01","001",1,-1],
+        [-1, "001","01",1],
+        'numbers with zero-s');
+    doTest(
+        ['a',1],
+        [1,'a'],
+        'number always comes first');
+    doTest(
+        ['1',1],
+        ['1',1],
+        'number vs numeric string - should remain unchanged (error in chrome)');
+    doTest(
+        [2,'02',1,3,'01',-1],
+        [-1,'01',1, '02',2,3],
+        'padding numeric string vs number');
+});
+suite('datetime', function () {
+    doTest(
+        ['10/12/2008','10/11/2008','10/11/2007','10/12/2007'],
+        ['10/11/2007','10/12/2007','10/11/2008','10/12/2008'],
+        'similar dates');
+    doTest(
+        ['01/01/2008','01/10/2008','01/01/1992','01/01/1991'],
+        ['01/01/1991','01/01/1992','01/01/2008','01/10/2008'],
+        'similar dates');
+    doTest(
+        [
+            'Wed Jan 01 2010 00:00:00 GMT-0800 (Pacific Standard Time)',
+            'Thu Dec 31 2009 00:00:00 GMT-0800 (Pacific Standard Time)',
+            'Wed Jan 01 2010 00:00:00 GMT-0500 (Eastern Standard Time)'
+        ],[
+            'Thu Dec 31 2009 00:00:00 GMT-0800 (Pacific Standard Time)',
+            'Wed Jan 01 2010 00:00:00 GMT-0500 (Eastern Standard Time)',
+            'Wed Jan 01 2010 00:00:00 GMT-0800 (Pacific Standard Time)'
+        ], 'javascript toString(), different timezones');
+    doTest(
+        [
+            'Saturday, July 3, 2010',
+            'Monday, August 2, 2010',
+            'Monday, May 3, 2010'
+        ],[
+            'Monday, May 3, 2010',
+            'Saturday, July 3, 2010',
+            'Monday, August 2, 2010'
+        ], 'Date.toString(), Date.toLocaleString()');
+    doTest(
+        [
+            'Mon, 15 Jun 2009 20:45:30 GMT',
+            'Mon, 3 May 2010 17:45:30 GMT',
+            'Mon, 15 Jun 2009 17:45:30 GMT'
+        ],[
+            'Mon, 15 Jun 2009 17:45:30 GMT',
+            'Mon, 15 Jun 2009 20:45:30 GMT',
+            'Mon, 3 May 2010 17:45:30 GMT'
+        ], 'Date.toUTCString()');
+    doTest(
+        [
+            'Saturday, July 3, 2010 1:45 PM',
+            'Saturday, July 3, 2010 1:45 AM',
+            'Monday, August 2, 2010 1:45 PM',
+            'Monday, May 3, 2010 1:45 PM'
+        ],[
+            'Monday, May 3, 2010 1:45 PM',
+            'Saturday, July 3, 2010 1:45 AM',
+            'Saturday, July 3, 2010 1:45 PM',
+            'Monday, August 2, 2010 1:45 PM'
+        ], 'Date & Time AM/PM');
+    doTest(
+        [
+            'Saturday, July 3, 2010 1:45:30 PM',
+            'Saturday, July 3, 2010 1:45:29 PM',
+            'Monday, August 2, 2010 1:45:01 PM',
+            'Monday, May 3, 2010 1:45:00 PM'
+        ],[
+            'Monday, May 3, 2010 1:45:00 PM',
+            'Saturday, July 3, 2010 1:45:29 PM',
+            'Saturday, July 3, 2010 1:45:30 PM',
+            'Monday, August 2, 2010 1:45:01 PM'
+        ], 'Date & Time hh:mm:ss');
+    doTest(
+        [
+            '2/15/2009 1:45 PM',
+            '1/15/2009 1:45 PM',
+            '2/15/2009 1:45 AM'
+        ],[
+            '1/15/2009 1:45 PM',
+            '2/15/2009 1:45 AM',
+            '2/15/2009 1:45 PM'
+        ], 'Date & Time short format AM/PM');
+    doTest(
+        [
+            '2010-06-15T13:45:30',
+            '2009-06-15T13:45:30',
+            '2009-06-15T01:45:30.2',
+            '2009-01-15T01:45:30'
+        ],[
+            '2009-01-15T01:45:30',
+            '2009-06-15T01:45:30.2',
+            '2009-06-15T13:45:30',
+            '2010-06-15T13:45:30'
+        ], 'ISO8601 Dates');
+    doTest(
+        [
+            '2010-06-15 13:45:30',
+            '2009-06-15 13:45:30',
+            '2009-01-15 01:45:30'
+        ],[
+            '2009-01-15 01:45:30',
+            '2009-06-15 13:45:30',
+            '2010-06-15 13:45:30'
+        ], 'ISO8601-ish YYYY-MM-DDThh:mm:ss - which does not parse into a Date instance');
+    doTest(
+        [
+            'Mon, 15 Jun 2009 20:45:30 GMT',
+            'Mon, 15 Jun 2009 20:45:30 PDT',
+            'Mon, 15 Jun 2009 20:45:30 EST',
+        ],[
+            'Mon, 15 Jun 2009 20:45:30 GMT',
+            'Mon, 15 Jun 2009 20:45:30 EST',
+            'Mon, 15 Jun 2009 20:45:30 PDT'
+        ], 'RFC1123 testing different timezones');
+    doTest(
+        [
+            '1245098730000',
+            '14330728000',
+            '1245098728000'
+        ],[
+            '14330728000',
+            '1245098728000',
+            '1245098730000'
+        ], 'unix epoch, Date.getTime()');
+});
 
-test("Mixed Strings", ['123asd','19asd','12345asd','asd123','asd12'],['19asd','123asd','12345asd','asd12','asd123']);
+suite('version number strings', function () {
+    doTest(
+        ['1.0.2','1.0.1','1.0.0','1.0.9'],
+        ['1.0.0','1.0.1','1.0.2','1.0.9'],
+        'close version numbers');
+    doTest(
+        ['1.0.03','1.0.003','1.0.002','1.0.0001'],
+        ['1.0.0001','1.0.002','1.0.003','1.0.03'],
+        'multi-digit branch release');
+    doTest(
+        ['1.1beta','1.1.2alpha3','1.0.2alpha3','1.0.2alpha1','1.0.1alpha4','2.1.2','2.1.1'],
+        ['1.0.1alpha4','1.0.2alpha1','1.0.2alpha3','1.1.2alpha3','1.1beta','2.1.1','2.1.2'],
+        'close version numbers');
+    doTest(
+        ['myrelease-1.1.3','myrelease-1.2.3','myrelease-1.1.4','myrelease-1.1.1','myrelease-1.0.5'],
+        ['myrelease-1.0.5','myrelease-1.1.1','myrelease-1.1.3','myrelease-1.1.4','myrelease-1.2.3'],
+        'string first');
+});
 
-test("Dates (dmy)",['10/12/2008','10/11/2008','10/11/2007','10/12/2007'],['10/11/2007', '10/12/2007', '10/11/2008', '10/12/2008']);
+suite('numerics', function () {
+    doTest(
+        ['10',9, 0, 2,'1','4'],
+        [0, '1',2,'4',9,'10'],
+        'string vs number');
+    doTest(
+        ['001','002','0001'],
+        ['0001','001','002'],
+        '0 left-padded numbers');
+    doTest(
+        [2,1,'1','0001','002','02','001'],
+        ['0001','001',1,'1','002','02',2],
+        //['0001','001','002','02',1,'1',2],
+        '0 left-padded numbers and regular numbers');
+    doTest(
+        ['10.0401',10.022,10.042,'10.021999'],
+        ['10.021999',10.022,'10.0401',10.042],
+        'decimal string vs decimal, different precision');
+    doTest(
+        ['10.04',10.02,10.03,'10.01'],
+        ['10.01',10.02,10.03,'10.04'],
+        'decimal string vs decimal, same precision');
 
-test("Money",['$10002.00','$10001.02','$10001.01'],['$10001.01','$10001.02','$10002.00']);
+/* not supported
+    doTest(
+        ['10.04f','10.039F','10.038d','10.037D'],
+        ['10.037D','10.038d','10.039F','10.04f'],
+        'float/decimal with \'F\' or \'D\' notation');
 
-test("Movie Titles",
-	['1 Title - The Big Lebowski','1 Title - Gattaca','1 Title - Last Picture Show'],
-	['1 Title - Gattaca','1 Title - Last Picture Show','1 Title - The Big Lebowski']);
+    doTest(
+        ['10.004Z','10.039T','10.038ooo','10.037g'],
+        ['10.004Z','10.037g','10.038ooo','10.039T'],
+        'not foat/decimal notation');
+*/
+    doTest(
+        ['1.528535047e5','1.528535047e7','1.528535047e3'],
+        ['1.528535047e3','1.528535047e5','1.528535047e7'],
+        'scientific notation');
+    doTest(
+        ['-1','-2','4','-3','0','-5'],
+        ['-5','-3','-2','-1','0','4'],
+        'negative numbers as strings');
+    doTest(
+        [-1,'-2',4,-3,'0','-5'],
+        ['-5',-3,'-2',-1,'0',4],
+        'negative numbers as strings - mixed input type, string + numeric');
+    doTest(
+        [-2.01,-2.1,4.144,4.1,-2.001,-5],
+        [-5,-2.1,-2.01,-2.001,4.1,4.144],
+        'negative floats - all numeric');
 
-test("Disk Memory (kgmt)",
-	['2Gb','4Kb','1.23Tb','2.73kb','0.4Tb'],
-	['2.73kb','4Kb','2Gb','0.4Tb','1.23Tb']);
-
-test("ERR-Array with ''",['10',9,2,'','1','4'],['','1',2,'4',9,'10']);
-
-test("ERR-Array with nulls",['10',9,2,null,'1','4'],['1',2,'4',9,'10']);
-test("ERR-Array with empty slots",['10',9,2,,'1','4'],['1',2,'4',9,'10']);
+});
 
 
-	</script>
+suite('IP addresses', function () {
+    doTest(
+        ['192.168.0.100','192.168.0.1','192.168.1.1'],
+        ['192.168.0.1','192.168.0.100','192.168.1.1'],
+        "IP addresses1");
+    doTest(
+        ['100.100.100.100','256.100.100.100','10.100.100.100','1.100.25.100'],
+        ['1.100.25.100','10.100.100.100','100.100.100.100','256.100.100.100'],
+        "IP addresses2");
+    doTest(
+        [
+            '192.168.0.100',
+            '192.168.0.1',
+            '192.168.1.1',
+            '192.168.0.250',
+            '192.168.1.123',
+            '10.0.0.2',
+            '10.0.0.1'
+        ],
+        [
+            '10.0.0.1',
+            '10.0.0.2',
+            '192.168.0.1',
+            '192.168.0.100',
+            '192.168.0.250',
+            '192.168.1.1',
+            '192.168.1.123'
+        ], 'IP addresses 3');
+});
+
+
+suite('filenames', function () {
+    doTest(
+        ['img12.png','img10.png','img2.png','img1.png'],
+        ['img1.png','img2.png','img10.png','img12.png'],
+        'simple image filenames');
+    doTest(
+        ['car.mov','01alpha.sgi','001alpha.sgi','my.string_41299.tif','organic2.0001.sgi'],
+        ['001alpha.sgi','01alpha.sgi','car.mov','my.string_41299.tif','organic2.0001.sgi'],
+        'complex filenames');
+    doTest([
+            './system/kernel/js/01_ui.core.js',
+            './system/kernel/js/00_jquery-1.3.2.js',
+            './system/kernel/js/02_my.desktop.js'
+        ],[
+            './system/kernel/js/00_jquery-1.3.2.js',
+            './system/kernel/js/01_ui.core.js',
+            './system/kernel/js/02_my.desktop.js'
+        ], 'unix filenames');
+
+
+    doTest(
+        ['123asd','19asd','12345asd','asd123','asd12'],
+        ['19asd','123asd','12345asd','asd12','asd123'],
+        "Mixed Strings (short)");
+
+    doTest(
+        ['T78','U17','U10','U12','U14','745','U7','01','485','S16','S2','S22','1081','S25','1055','779','776','771','44','4','87','1091','42','480','952','951','756','1000','824','770','666','633','619','1','991','77H','PIER-7','47','29','9','77L','433'],
+        ['01','1','4','9','29','42','44','47','77H','77L','87','433','480','485','619','633','666','745','756','770','771','776','779','824','951','952','991','1000','1055','1081','1091','PIER-7','S2','S16','S22','S25','T78','U7','U10','U12','U14','U17'],
+        'Mixed strings (long)');
+
+    doTest(
+        ['$10002.00','$10001.02','$10001.01'],
+        ['$10001.01','$10001.02','$10002.00'],
+        "Monetary strings");
+
+    doTest(
+        ['1 Title - The Big Lebowski','1 Title - Gattaca','1 Title - Last Picture Show'],
+        ['1 Title - Gattaca','1 Title - Last Picture Show','1 Title - The Big Lebowski'],
+        "Movie Titles");
+
+    doTest(
+        [
+            'FSI stop, Position: 5',
+            'Mail Group stop, Position: 5',
+            'Mail Group stop, Position: 5',
+            'FSI stop, Position: 6',
+            'FSI stop, Position: 6',
+            'Newsstand stop, Position: 4',
+            'Newsstand stop, Position: 4',
+            'FSI stop, Position: 5'
+        ],[
+            'FSI stop, Position: 5',
+            'FSI stop, Position: 5',
+            'FSI stop, Position: 6',
+            'FSI stop, Position: 6',
+            'Mail Group stop, Position: 5',
+            'Mail Group stop, Position: 5',
+            'Newsstand stop, Position: 4',
+            'Newsstand stop, Position: 4'
+        ],'Mixed Strings (one more)');
+
+});
+
+
+suite('space(s) as first character(s)', function () {
+    doTest(
+        ['alpha',' 1','  3',' 2',0],
+        [0,' 1',' 2','  3','alpha'],
+        'leading spaces');
+});
+
+
+suite('empty strings and space character', function () {
+
+    doTest(
+        ['10023','999','',2,5.663,5.6629],
+        ['',2,5.6629,5.663,'999','10023'],
+        'empty strings ""');
+
+    doTest(
+        [0,'0',''],
+        [0,'0',''],
+        'empty strings ""');
+
+});
+
+
+suite('hex', function () {
+    doTest(
+        [
+            '0xA','0x9','0x99'
+        ],
+        [
+            '0x9','0xA','0x99'
+        ],'real hex numbers');
+    doTest(
+        [
+            '0xZZ','0xVVV','0xVEV','0xUU'
+        ],
+        [
+            '0xUU','0xVEV','0xVVV','0xZZ'
+        ],'fake hex numbers');
+});
+
+
+suite('unicode', function () {
+    doTest(
+        [
+            '\u0044',
+            '\u0055',
+            '\u0054',
+            '\u0043'
+        ],[
+            '\u0043',
+            '\u0044',
+            '\u0054',
+            '\u0055'
+        ],'basic latin');
+});
+
+
+suite('sparse array sort', function () {
+    var sarray = [3, 2],
+        sarrayOutput = [1, 2, 3];
+    sarray[10] = 1;
+    for (var i=0; i < 8; i++)
+        sarrayOutput.push(undefined);
+
+    doTest(sarray, sarrayOutput,'simple sparse array');
+});
+
+
+suite('case sensitive sorting', function () {
+    doTest(
+        ['A', 'C', 'E', 'b', 'd', 'f'],
+        ['A', 'C', 'E', 'b', 'd', 'f'],
+        'case sensitive pre-sorted array');
+    doTest(
+        ['A', 'b', 'C', 'd', 'E', 'f'],
+        ['A', 'C', 'E', 'b', 'd', 'f'],
+        'case sensitive un-sorted array');
+});
+suite('empty slots', function () {
+    doTest(
+        [2, 10, 1, 'azd', undefined, 'asd'],
+        [1, 2, 10, 'asd', 'azd', undefined],
+        'suport for "undefined"');
+    doTest(
+        [undefined, undefined, undefined, 1, undefined],
+        [1, undefined, undefined, undefined, undefined],
+        'support for "undefined"');
+
+    doTest(
+        ['10',9,2,'','1','4'],
+        ['','1',2,'4',9,'10'],
+        "Array with empty strings  '' ");
+
+    doTest(
+        ['10',9,2,,'1','4'],
+        ['1',2,'4',9,'10',undefined],
+        "Array with empty slots");
+
+    doTest(
+        ['10',9,2,null,'1','4'],
+        ['1',2,'4',9,'10',null],
+        "Array with nulls");
+
+
+    doTest(
+        ['9','11','22','99','A','aaaa','bbbb','Aaaa','aAaa','aa','AA','Aa','aA','BB','bB','aaA','AaA','aaa'],
+        ['9', '11', '22', '99', 'A', 'AA', 'Aa', 'AaA', 'Aaaa', 'BB', 'aA', 'aAaa', 'aa', 'aaA', 'aaa', 'aaaa', 'bB', 'bbbb'],
+        'issue #5 - sort order (case sensitive)');
+});
+
+
+
+var arr1 = ['9','11','22','99','A','aaaa','bbbb','Aaaa','aAaa','aa','AA','Aa','aA','BB','bB','aaA','AaA','aaa'],
+    arr2 = ['9','11','22','99','A','AA','Aa','AaA','Aaaa','BB','aA','aAaa','aa','aaA','aaa','aaaa','bB','bbbb'];
+
+    console.log("\nTest cache: " + arr1);
+    console.log("Cache= " + arr1.cache);
+    doTest(arr1, arr2 ,'FIRST');
+    console.log("Cache= " + arr1.cache);
+    arr1.reverse();
+    arr2.reverse();
+    doTest(arr1, arr2 ,'CACHE');
+
+
+/*
+console.log('\n\n');
+
+function datetester(s, validate){
+    var d = Date.parse(s);
+    var dd = new Date(s);
+    var x = /[^\-\:\/\d]+[\-\:\/\d]+$/.test(s);
+
+    console.log(s,' **** Date.parse/new Date ', d, dd,' **** ', validate, " ** ", x);
+}
+
+
+datetester("Monday, August 2, 2010","extended date format" );
+
+datetester('FSI stop, Position: 2013',"nan" );
+datetester('FSI stop, Position: 2013x',"nan" );
+datetester('FSI stop, Position: 5',"nan" );
+datetester('5',"mm" );
+datetester('2013',"yyyy" );
+datetester('25 FEB 2015',"???" );
+datetester('xx25 FEB 2015xx',"???" );
+datetester('xx 25 FEB 2015 xx',"???" );
+
+
+datetester('PREFIX 10/12/1982',"PREFIX strings allowed" );
+datetester('PREFIX 10/12/1982 SUFFIX',"PREFIX and SUFFIX strings not allowed" );
+datetester('10/12/1982 SUFFIX',"SUFFIX strings not allowed" );
+
+datetester('10/12/1982',"Tue Oct 12 1982 00:00:00 GMT-0700 (Pacific Daylight Time)" );
+datetester('10/12/1982 10:45 pm',"Tue Oct 12 1982 22:45:00 GMT-0700 (Pacific Daylight Time)" );
+datetester('10/12/1982 10:45pm',NaN );
+datetester('10.12.1982 22:45:00',"Tue Oct 12 1982 22:45:00 GMT-0700 (Pacific Daylight Time)" );
+datetester('2007-06-08 16:34:52',"Fri Jun 08 2007 16:34:52 GMT-0700 (Pacific Daylight Time)" );
+datetester('2007-06-08T16:34:52+0200',"Fri Jun 08 2007 07:34:52 GMT-0700 (Pacific Daylight Time)" );
+datetester('Thu Oct 22 08:11:23 +0000 2009', "Thu Oct 12 2009 08:11:23 GMT (Greenwich Mean Time)" );
+
+datetester('1st',"Sat Dec 01 2007 00:00:00 GMT-0800 (Pacific Standard Time)" );
+datetester('14th October',"Sun Oct 14 2007 00:00:00 GMT-0700 (Pacific Daylight Time)" );
+datetester('24th May, 2007',"Thu May 24 2007 00:00:00 GMT-0700 (Pacific Daylight Time)" );
+datetester('May 3rd 2006 10:45pm',"Wed May 03 2006 22:45:00 GMT-0700 (Pacific Daylight Time)" );
+
+*/
+
+    </script>
 
 </head>
 
@@ -130,62 +598,62 @@ test("ERR-Array with empty slots",['10',9,2,,'1','4'],['1',2,'4',9,'10']);
 
     <h1>Tablesort</h1>
 
-	<div class="sortable">
-	<table class="wikitable" >
+    <div class="sortable">
+    <table class="wikitable" >
 
-			<tr>
-				<th scope="col" title="President Number">#</th>
-				<th scope="col">President</th>
-				<th scope="col">Terms</th>
-				<th scope="col">Tenure</th>
-			</tr>
-			<tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
-			<tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
-			<tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
-			<tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
-			<tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
-			<tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
-			<tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
-			<tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
-			<tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
-			<tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
-			<tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
-			<tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
-			<tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
-			<tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
-			<tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
-			<tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
-			<tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
-			<tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
-			<tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
-			<tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
-			<tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
-			<tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
-			<tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
-			<tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
-			<tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
-			<tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
-			<tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
-			<tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
-			<tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
-			<tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
-			<tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
-			<tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
-			<tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
-			<tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
-			<tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
-			<tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
-			<tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
-			<tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
-			<tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
-			<tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
-			<tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
-			<tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
-			<tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
-			<tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
+            <tr>
+    <th scope="col" title="President Number">#</th>
+    <th scope="col">President</th>
+    <th scope="col">Terms</th>
+    <th scope="col">Tenure</th>
+            </tr>
+            <tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
+            <tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
+            <tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
+            <tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
+            <tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
+            <tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
+            <tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
+            <tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
+            <tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
+            <tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
+            <tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
+            <tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
+            <tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
+            <tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
+            <tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
+            <tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
+            <tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
+            <tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
+            <tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
+            <tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
+            <tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
+            <tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
+            <tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
+            <tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
+            <tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
+            <tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
+            <tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
+            <tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
+            <tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
+            <tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
+            <tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
+            <tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
+            <tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
+            <tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
+            <tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
+            <tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
+            <tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
+            <tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
+            <tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
+            <tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
+            <tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
+            <tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
+            <tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
+            <tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
 
-	</table
-	</div>
+    </table
+    </div>
 
 </td>
 <td>
@@ -193,7 +661,7 @@ test("ERR-Array with empty slots",['10',9,2,,'1','4'],['1',2,'4',9,'10']);
 
     <h1>Sorted Table</h1>
 
-	<div class="sortable zebra-lemonchiffon-gold">
+    <div class="sortable zebra-lemonchiffon-gold">
 
 <table class="wikitable" border="1"><tr class="odd"><th> Title </th><th> Author </th><th> Published   </th><th> Edition </th><th> Some IP@        </th><th> Expenses </th><th> Disk Memory</th></tr>
 <tr><td> book1  </td><td>  zappy  </td><td>  25 Feb 2005 </td><td>  5       </td><td>  100.100.100.100 </td><td>  €500     </td><td>  2Gb </td></tr>
@@ -213,67 +681,67 @@ test("ERR-Array with empty slots",['10',9,2,,'1','4'],['1',2,'4',9,'10']);
 </table>
 
 
-	</div>
+    </div>
 
 </td>
 <td>
 
     <h1>Filtered Table (new)</h1>
 
-	<div class="zebra-lightcyan table-filter sortable">
-	<table class="wikitable" >
-			<tr>
-				<th scope="col" title="President Number">#</th>
-				<th scope="col">President</th>
-				<th scope="col">Terms</th>
-				<th scope="col">Tenure</th>
-			</tr>
-			<tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
-			<tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
-			<tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
-			<tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
-			<tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
-			<tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
-			<tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
-			<tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
-			<tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
-			<tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
-			<tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
-			<tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
-			<tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
-			<tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
-			<tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
-			<tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
-			<tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
-			<tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
-			<tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
-			<tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
-			<tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
-			<tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
-			<tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
-			<tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
-			<tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
-			<tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
-			<tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
-			<tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
-			<tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
-			<tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
-			<tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
-			<tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
-			<tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
-			<tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
-			<tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
-			<tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
-			<tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
-			<tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
-			<tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
-			<tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
-			<tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
-			<tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
-			<tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
-			<tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
-		</table>
-	</div>
+    <div class="zebra-lightcyan table-filter sortable">
+    <table class="wikitable" >
+            <tr>
+    <th scope="col" title="President Number">#</th>
+    <th scope="col">President</th>
+    <th scope="col">Terms</th>
+    <th scope="col">Tenure</th>
+            </tr>
+            <tr><td>1</td><td>George Washington</td><td>two</td><td>1789-1797</td></tr>
+            <tr><td>2</td><td>John Adams</td><td>one</td><td>1797-1801</td></tr>
+            <tr><td>3</td><td>Thomas Jefferson</td><td>two</td><td>1801-1809</td></tr>
+            <tr><td>4</td><td>James Madison</td><td>two</td><td>1809-1817</td></tr>
+            <tr><td>5</td><td>James Monroe</td><td>two</td><td>1817-1825</td></tr>
+            <tr><td>6</td><td>John Quincy Adams</td><td>one</td><td>1825-1829</td></tr>
+            <tr><td>7</td><td>Andrew Jackson</td><td>two</td><td>1829-1837</td></tr>
+            <tr><td>8</td><td>Martin Van Buren</td><td>one</td><td>1837-1841</td></tr>
+            <tr><td>9</td><td>William Henry Harrison</td><td>one-partial</td><td>1841</td></tr>
+            <tr><td>10</td><td>John Tyler</td><td>one-partial</td><td>1841-1845</td></tr>
+            <tr><td>11</td><td>James Knox Polk</td><td>one</td><td>1845-1849</td></tr>
+            <tr><td>12</td><td>Zachary Taylor</td><td>one-partial</td><td>1849-1850</td></tr>
+            <tr><td>13</td><td>Millard Fillmore</td><td>one-partial</td><td>1850-1853</td></tr>
+            <tr><td>14</td><td>Franklin Pierce</td><td>one</td><td>1853-1857</td></tr>
+            <tr><td>15</td><td>James Buchanan</td><td>one</td><td>1857-1861</td></tr>
+            <tr><td>16</td><td>Abraham Lincoln</td><td>two-partial</td><td>1861-1865</td></tr>
+            <tr><td>17</td><td>Andrew Johnson</td><td>one-partial</td><td>1865-1869</td></tr>
+            <tr><td>18</td><td>Ulysses S. Grant</td><td>two</td><td>1869-1877</td></tr>
+            <tr><td>19</td><td>Rutherford Birchard Hayes</td><td>one</td><td>1877-1881</td></tr>
+            <tr><td>20</td><td>James Abram Garfield</td><td>one-partial</td><td>1881</td></tr>
+            <tr><td>21</td><td>Chester Alan Arthur</td><td>one-partial</td><td>1881-1885</td></tr>
+            <tr><td>22</td><td>Grover Cleveland</td><td>one</td><td>1885-1889</td></tr>
+            <tr><td>23</td><td>Benjamin Harrison</td><td>one</td><td>1889-1893</td></tr>
+            <tr><td>24</td><td>Grover Cleveland</td><td>one-again</td><td>1893-1897</td></tr>
+            <tr><td>25</td><td>William McKinley</td><td>two-partial</td><td>1897-1901</td></tr>
+            <tr><td>26</td><td>Theodore Roosevelt</td><td>two-partial</td><td>1901-1909</td></tr>
+            <tr><td>27</td><td>William Howard Taft</td><td>one</td><td>1909-1913</td></tr>
+            <tr><td>28</td><td>Woodrow Wilson</td><td>two</td><td>1913-1921</td></tr>
+            <tr><td>29</td><td>Warren Gamaliel Harding</td><td>two-partial</td><td>1921-1923</td></tr>
+            <tr><td>30</td><td>Calvin Coolidge</td><td>two-partial</td><td>1923-1929</td></tr>
+            <tr><td>31</td><td>Herbert Clark Hoover</td><td>one</td><td>1929-1933</td></tr>
+            <tr><td>32</td><td>Franklin Delano Roosevelt</td><td>four-partial</td><td>1933-1945</td></tr>
+            <tr><td>33</td><td>Harry S. Truman</td><td>two-partial</td><td>1945-1953</td></tr>
+            <tr><td>34</td><td>Dwight David Eisenhower</td><td>two</td><td>1953-1961</td></tr>
+            <tr><td>35</td><td>John Fitzgerald Kennedy</td><td>two-partial</td><td>1961-1963</td></tr>
+            <tr><td>36</td><td>Lyndon Baines Johnson</td><td>two-partial</td><td>1963-1969</td></tr>
+            <tr><td>37</td><td>Richard Milhous Nixon</td><td>two-partial</td><td>1969-1974</td></tr>
+            <tr><td>38</td><td>Gerald Rudolph Ford</td><td>two-partial</td><td>1974-1977</td></tr>
+            <tr><td>39</td><td>James Earl Carter, Jr.</td><td>one</td><td>1977-1981</td></tr>
+            <tr><td>40</td><td>Ronald Wilson Reagan</td><td>two</td><td>1981-1989</td></tr>
+            <tr><td>41</td><td>George Herbert Walker Bush</td><td>one</td><td>1989-1993</td></tr>
+            <tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
+            <tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
+            <tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
+        </table>
+    </div>
 </td>
 </tr>
 </table>

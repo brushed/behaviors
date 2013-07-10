@@ -58,10 +58,8 @@ Viewer.Carousel = new Class({
         var self = this,
             t = 'transitionend';
 
-        self.css3 = Element.Events[t] ? t : null;
-
         options = self.setOptions(options).options;
-
+        self.css3 = Element.Events[t] ? t : null;
         self.container = options.container;
 
         Viewer.preloads( $$(elements), { width:options.width, height:options.height }, self.build );
@@ -72,22 +70,23 @@ Viewer.Carousel = new Class({
 
         var self = this,
             items = [],
-            autoCycle = self.options.cycle,
+            cycle = self.options.cycle,
             NOP = function(){},
             url, newEl;
 
         $$(elements).each( function(el){ items.push('div.item',[ el ]) });
+        items[0] +='.active';
 
         self.container.adopt([
             'div.carousel', {
-                attach:[self/*,'element'*/],
+                attach: self/*,'element'*/,
                 styles:{
                     width: width,
                     height: height
                 },
                 events:{
-                    mouseenter: autoCycle ? self.stop : NOP,
-                    mouseleave: autoCycle ? self.cycle : NOP
+                    mouseenter: cycle ? self.stop : NOP,
+                    mouseleave: cycle ? self.cycle : NOP
                 }
             },[
                 'div.carousel-inner',
@@ -97,8 +96,7 @@ Viewer.Carousel = new Class({
             ]
         ].rendAr());
 
-        self.get('.item')[0].addClass('active');
-        self.cycle();
+        //self.cycle();  only start cycling after a first mouseenter , next()
 
     },
 
