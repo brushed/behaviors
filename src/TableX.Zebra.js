@@ -26,9 +26,9 @@ TableX.Zebra = function(table, options){
     };
 
     var colors = options.colors,
-        isArr = colors.length;
+        isArr = colors[0];
 
-    if ( !isArr ) colors = colors.map( function(c){ return new Color(c); });
+    if ( isArr ){ colors = colors.map( function(c){ return new Color(c); }); }
 
     //console.log("ZEBRA ",options.colors, colors[0],colors[1]);
     stripe.call( new TableX(table, { onRefresh:stripe }) );
