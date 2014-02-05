@@ -13,9 +13,9 @@ TableX.Filter = new Class({
     Implements: Options,
 
     options :{
-        minSize: 8,  //don't show the filter on tables with less than this number of rows
-        shortcut: 'a.btn[href="#"][text="{0}"]', //template for shortcut filter-strings
-        list: [],  //list of shortcuts to quickly filter the table
+        minSize: 5,  //don't show the filter on tables with less than this number of rows
+        shortcut: 'a.btn.btn-link[text="{0}"]', //template for shortcut filter-strings
+        list: [], //['99','test'],  //TODO list of shortcuts to quickly filter the table
         hint: 'filter this table',  //HTML5 placeholder text for the filter field
         highlight: 'highlight'  //class applied to cells containing the filter term
     },
@@ -23,22 +23,25 @@ TableX.Filter = new Class({
     initialize: function(table, options){
 
         options = this.setOptions(options).options;
-
+        
         var self = this,
             items = [],
             minRows = options.minRows,
             filter = self.filter.bind(self);
 
+
         self.table = table = new TableX(table, {minSize:options.minSize});
 
-        if( table ){
+        if( table && table.table){
 
             options.list.each(function(item){
-                items.push( options.shortcut.xsubs(item),{events:{click : self.shortcut.pass(item,self) }} );
+                items.push( options.shortcut.xsubs(item),{
+                    events:{click : self.shortcut.pass(item,self) }
+                });
             });
 
-            ['p.filter-input',[
-                'input[type=search][placeholder="'+options.hint+'"]',{
+            ['div.form-group.filter-input',[
+                'input.form-control[type=search][placeholder="'+options.hint+'"]',{
                     attach: [ self, 'input' ],
                     events: {
                         keyup: filter,    //'keyup:throttle': filter,
@@ -46,13 +49,14 @@ TableX.Filter = new Class({
                     }
                 }],
                 items
-            ].rendAr().inject(table.table,'before');
+            ].slick().inject(table.table,'before');
 
         }
     },
 
     shortcut: function(value){
         this.input.set('value', value).fireEvent('click').focus();
+        return false;
     },
 
     filter: function(){

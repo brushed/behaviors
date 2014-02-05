@@ -6,14 +6,14 @@ Class: GraphBar
     Allow to specify maximum and minimum values.
 
 >    %%graphBars
->        %%gBar 25 /%
+>        %%gbBar 25 /%
 >    /%
 
-    Graphbar parameters can be passed in js class constructor (options)
-    or as css call-name parameters.
+    Graphbar parameters can be passed in the js class constructor (options)
+    or as css class parameters.
 
 >    %%graphBars-min50-max3000-progress-lime-0f0f0f
->        %%gBar 25 /%
+>        %%gbBar 25 /%
 >    /%
 
     Other examples of wiki-markup:
@@ -25,8 +25,8 @@ Class: GraphBar
 > %%graphBars-gauge ... %%     gauge bars in gradient colors
 
 Options:
-    classPrefix - CSS classname of parent element (default = graphBars)
-    classBar - CSS classname of the bar value elements (default = gBar)
+    gbBar - CSS classname of the bar value elements (default = gbBar)
+    gbBarContainer - CSS classname of parent element (default = graphBars)
     lowerbound - lowerbound of bar values (default:20px)
     upperbound - upperbound of bar values (default:320px)
     vwidth - vertical bar width in px(default:20px)
@@ -36,29 +36,36 @@ Options:
 
 
 DOM-structure:
-    Original DOM-structure
->    <span class="gBar">100 </span>
+(start code)
+    // original DOM-structure
+    span.gbBar 100 
 
-    Is converted to following horizontal bar
->    <span class="graphBar" style="border-left-width: 20px;">x</span>
->    <span class="gBar">100 </span>
+    // horizontal bar
+    span.graphBar[style="border-left-width: 85px;"]x
+    span.gbBar 150
 
-    or is converted to following vertical bar
->   <div style="height: 77px; position: relative;">
->       <span class="graphBar"
->             style="border-color: rgb(255, 0, 0);
->                    border-bottom-width: 20px;
->                    position: absolute;
->                    width: 20px;
->                    bottom: 0px;"/>
->       <span style="position: relative; top: 40px;"> 20 </span>
->    </div>
+    // vertical bar
+    div[style="height: 77px; position: relative;"]
+       span.graphBar[style="border-color: rgb(255, 0, 0);
+                    border-bottom-width: 20px;
+                    position: absolute;
+                    width: 20px;
+                    bottom: 0px;]
+       span[style="position: relative; top: 40px;] 20
 
-    or is converted to following progress bar
->    <span class="graphBar" style="border-color: rgb(0, 128, 0); border-left-width: 20px;">x</span>
->    <span class="graphBar" style="border-color: rgb(0, 255, 0); border-left-width: 300px; margin-left: -1ex;">x</span>
->    <span class="gBar">100 </span>
+    // progress bar
+    span.graphBar[style="border-color:red; border-left-width: 20px;"]x
+    span.graphBar[style="border-color:blue; border-left-width: 300px; margin-left: -1ex;"]x
+    span.gbBar 100
 
+
+>>based on BOOTSTRAP
+    span.gb-group[width:125px] 
+      span.gb-bar[style="background:blue;width:40%"]
+      span.gb-bar[style="background:red;width:60%"]
+    span.gbBar 100
+
+(end)
 
 Examples:
 >    new GraphBar( dom-element, { options });
@@ -70,11 +77,15 @@ var GraphBar = new Class({
     Implements: Options,
 
     options: {
-        classPrefix:"graphBars",
-        classBar:"gBar",
-        lowerbound:20,
-        upperbound:320,
-        vwidth:20, //vertical bar width
+        container: "graphBars", //classname of container
+        gBar: "gBar", //classname of value tags
+
+        gbGroup: "span.gb-group",
+        gbBar: "span.gb-bar",
+        
+        offset:20, //(px) smallest bar = offset
+        size:300, //(px) tallest bar = offset+size
+
         isHorizontal:true,
         isProgress:false,
         isGauge:false
@@ -82,191 +93,163 @@ var GraphBar = new Class({
 
     initialize: function(el, options){
 
-        this.setOptions(options);
-        this.parseParameters( el );
 
         var self = this,
-            options = self.options,
-            bars = el.getElements('.'+ options.classBar + options.barName), //collect all gBar elements
-            color1 = self.color1,
-            color2 = self.color2,
-            border = (options.isHorizontal ? 'borderLeft' : 'borderBottom'),
-            isProgress = options.isProgress,
-            isGauge = options.isGauge,
+            args = el.className,
+            bars, data, i, len, table, clazz;
 
-            tmp = options.upperbound,
-            ubound = Math.max(tmp, options.lowerbound),
-            lbound = (tmp == ubound) ? options.lowerbound : tmp;
+        self.setOptions(options);
+        
+        clazz = this.options.container;
+        if( args.indexOf( clazz )==0 ){
 
-        if( !color2 && color1){
-            color2 = (isGauge || isProgress) ? color1.invert() : color1;
+            options = self.getArguments( args.slice(clazz.length) );
+
+            bars = el.getElements('.'+ options.gBar + options.barName);
+
+            if( !bars[0] && ( table = el.getElement('table') )){ 
+
+                bars = new TableX( table ).filter(options.barName);
+
+            }
+
+            if( bars && bars[0] && (data = self.toNumbers(bars)) ){
+
+                data = data.scale();
+                for( i=0, len=bars.length; i<len; i++) self.render( bars[i], data[i], (i+1)/len );
+
+            }
         }
-
-        //if( !bars.length /*length==0*/ ){ bars = self.getTableValues(el, options.barName); }
-        if( !bars[0] ){ bars = self.getTableValues(el, options.barName); }
-
-        if( bars ){
-
-            var barData = self.parseBarData( bars, lbound, ubound-lbound );
-
-            bars.each( function(el, index){
-
-                var bar = {},
-                    progressbar = {},
-                    value = barData[index],
-                    barEL = new Element('span.graphBar'),
-                    pb = el.getParent(); // parent of gBar element
-
-                bar[ border+'Width' ] = value;
-
-                if( options.isHorizontal ){
-
-                    barEL.set('html','x');
-
-                    if( isProgress ){
-                        Object.append( progressbar, bar );
-                        bar[border+'Width'] = ubound - value;
-                        bar.marginLeft='-1ex';
-                    }
-
-                } else { // isVertical
-
-                    if( pb.match('td') ){ pb = new Element('div').wrapContent(pb); }
-
-                    pb.setStyles({
-                        height: ubound + el.getStyle('lineHeight').toInt(),
-                        position: 'relative'
-                    });
-                    el.setStyle('position', 'relative'); //needed for inserted spans ;-)) hehe
-                    if( !isProgress ){ el.setStyle('top', ubound - value ); }
-
-                    Object.append( bar, {position:'absolute', width:options.vwidth, bottom:0} );
-
-                    if( isProgress ){ Object.append(progressbar,bar)[border+'Width'] = ubound; }
-
-                }
-
-                if( isProgress ){
-
-                    if( color1 ){ bar.borderColor = color1.hex; }
-
-                    if( color2 ){ progressbar.borderColor = color2.hex }
-                    else        { bar.borderColor = 'transparent' }
-
-                } else if( color1 ){
-
-                    var percent = isGauge ? (value-lbound)/(ubound-lbound) : index/(bars.length-1);
-                    bar.borderColor = color1.mix(color2, 100 * percent).hex;
-
-                }
-
-                if( isProgress ){ barEL.clone().setStyles(progressbar).inject(el,'before'); }
-                barEL.setStyles(bar).inject(el,'before');
-
-
-            });
-        }
-
     },
 
-    parseParameters: function( el ){
+    getArguments: function( args ){
 
-        var self = this,
-            options = self.options,
-            parms = el.className.slice( options.classPrefix.length ).split('-');
+        var options = this.options,
+            p,min,max,size;
 
-        options.barName = parms.shift(), //first param is optional barName
+        args = args.split('-');
+        options.barName = args.shift(); //first param is optional barName
+        min = options.offset;
+        max = min + options.size;
 
-        parms.each( function( p ){
-            p = p.toLowerCase();
-            if(p == "vertical"){ options.isHorizontal = false; }
-            else if(p == "progress"){ options.isProgress = true;  }
-            else if(p == "gauge"){ options.isGauge = true; }
-            else if(!p.indexOf("min") /*index==0*/){ options.lowerbound = p.slice(3).toInt(); }
-            else if(!p.indexOf("max") /*index==0*/){ options.upperbound = p.slice(3).toInt(); }
+        while( args.length ){
 
-            else if(p != "") {
-                p = new Color(p,'hex'); if(!p.hex){ return; }
-                if( !self.color1 ){ self.color1 = p; }
-                else if( !self.color2 ){ self.color2 = p; }
+            p = args.shift().toLowerCase();
+
+            if( p == "vertical" ){ options.isHorizontal = false; }
+            else if( p == "gauge" ){ options.isGauge = true; }
+            else if( p == "progress" ){ options.isProgress = true;  }
+
+            else if( p == "striped" ){ options.gbGroup += "." + p; }
+            else if( p == "active" ){ options.gbGroup += ".striped." + p; }
+            else if( p.test(/success|info|warning|danger/ )){ options.gbBar += ".progress-bar-"+p; }
+
+            else if( !p.indexOf("min") /*index==0*/){ min = p.slice(3).toInt(); }
+            else if( !p.indexOf("max") /*index==0*/){ max = p.slice(3).toInt(); }
+            else if( p != "" ){
+
+                p = new Color(p); 
+                if( p.hex ){ 
+                    if( !options.color1 ){ options.color1 = p; }
+                    else if( !options.color2 ){ options.color2 = p; }
+                }
+
             }
+        }
+    
+        size = max-min;           
+        options.offset = (size > 0) ? min : max;
+        options.size = size.abs();        
+
+        return options;        
+    },
+
+
+    /*
+    Function: render
+        Render a graphBar and add it before or inside the element.
+    
+    Arguments:
+        el - element
+        val - converted value in range 0-100, 
+        percent - position of the graphBar in the group, converted to a %
+        
+    DOM Structure of a graphbar
+    (start code)
+        span.graphBar-Group[stle='width=..px']
+            span.graphBar[style='width=..%,background-color=..']
+            span.graphBar[style='width=..%,background-color=..'] //only for progress bars
+    (end)    
+    */
+    render: function(el, val, percent){
+
+        var options = this.options,
+            size = options.size,
+            offset = options.offset,
+            color1 = options.color1,
+            color2 = options.color2,
+            isGauge = options.isGauge,
+            isProgress = options.isProgress,
+            //isHorizontal = options.isHorizontal,
+            dom, css;
+
+
+        //color invertor
+		if( !color2 && color1 && (isGauge||isProgress)) color2 = color1.invert();
+
+        //color mixer
+        if( !isProgress && color2 ) color1 = color1.mix(color2, 100*(isGauge ? val : percent)); 
+
+        val = val*100;
+
+        //first calculate bar sizes: group-bar, bar1, (optional) bar2
+        css = isProgress ? 
+            [offset+size, val+"%", (100-val)+"%"] : 
+                [offset+val/100*(offset+size), "100%" ];
+
+        //then convert sizes to bar css styles
+        css = css.map( function(size){ 
+            return options.isHorizontal ? {width:size} : {height:size, width:20}; 
         });
 
-    },
+        //finally, add colors to the bar1 and bar2 css styles
+        if( color1 ) css[1].backgroundColor = color1.hex;
+        if( isProgress && color2 ) css[2].backgroundColor = color2.hex
 
+        //build slick template
+        dom = [options.gbGroup, { styles:css[0] }, [ options.gbBar, {styles:css[1]} ] ];
+        if( isProgress && color1) dom[2].push( options.gbBar, {styles:css[2]} );
+
+        dom.slick().inject(el, el.match('td') ? 'top' : 'before');
+
+    },
 
     /*
     Function: parseBarData
         Parse bar data types and scale according to lbound and size
+        
+        Convert values to %, min=0% and max=100%
+                
     */
-    parseBarData: function(nodes, lbound, size){
-        var barData=[],
-            maxValue=Number.MIN_VALUE,
-            minValue=Number.MAX_VALUE,
-            num=true,
-            ddd=num;
+    toNumbers: function(nodes){
 
-        nodes.each(function( n ){
-            var v = n.get('text');
-            barData.push(v);
-            num &= !isNaN(v.toFloat());
-            /* chrome accepts numbers as valid Dates !! */
-            ddd &= !isNaN(Date.parse(v)) && v.test(/[^\d]/);
-        });
+        var num=[], dmy=[], val, 
+            len=nodes.length, i,
+            min, scale;
 
-        barData = barData.map(function(b){
-            if( ddd ){ b = new Date(Date.parse(b) ).valueOf(); }
-            else if( num ){ b = b.match(/([+-]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)/i)[1].toFloat(); }
+        //check -- reuse Array.makeSortable(some-array)...
+        for( i=0; i<len; i++) {
+            val = nodes[i].get('text').trim();
 
-            maxValue = Math.max(maxValue, b);
-            minValue = Math.min(minValue, b);
-            return b;
-        });
+            if( num && isNaN( num[i] = +val ) ) num=0;
+            
+            //Only strings with non-numeric values
+            if( dmy && ( num || isNaN( dmy[i] = Date.parse(val) ) ) ) dmy=0;
+            
+        };
 
-        if(maxValue==minValue){ maxValue=minValue+1; }/* avoid div by 0 */
-        size = size/(maxValue-minValue);
+        return dmy || num || false; 
 
-        return barData.map(function(b){
-            return ( (size*(b-minValue)) + lbound).toInt();
-        });
-
-    },
-
-    /*
-    Function: getTableValues
-        Fetch set of gBar values from a table
-        * check first-row to match field-name: return array with col values
-        * check first-column to match field-name: return array with row values
-        * insert SPANs as place-holder of the missing gBars
-    */
-    getTableValues: function(node, fieldName){
-
-        var table = node.getElement('table');
-        if(!table){ return false; }
-        var tlen = table.rows.length, h, l, r, result, i;
-
-        if( tlen > 1 ){ /* check for COLUMN based table */
-            r = table.rows[0];
-            for( h=0, l=r.cells.length; h<l; h++ ){
-                if( $getText( r.cells[h] ).trim() == fieldName ){
-                    result = [];
-                    for( i=1; i< tlen; i++)
-                        //result.push( new Element('span').wrapContent(table.rows[i].cells[h]) );
-                        result.push( new Element('span').wraps(table.rows[i].cells[h]) );
-                    return result;
-                }
-            }
-        }
-        for( h=0; h < tlen; h++ ){  /* check for ROW based table */
-            r = table.rows[h];
-            if( $getText( r.cells[0] ).trim() == fieldName ){
-                result = [];
-                for( i=1,l=r.cells.length; i<l ; i++)
-                    //result.push( new Element('span').wrapContent(r.cells[i]) );
-                    result.push( new Element('span').wraps(r.cells[i]) );
-                return result;
-            }
-        }
-        return false;
     }
+
 });

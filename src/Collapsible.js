@@ -50,9 +50,9 @@ var T_Collapsible = this.Collapsible = new Class({
 
     options: {
         bullet: 'b.bullet', //'b.bullet[html=&bull;]' //css selector of clickable bullet
+        hint: { open:"collapse",close:"expand" },
         open: 'xpand',
         close: 'clpse',
-        hint: {open:"collapse",close:"expand"},
 
         //target: 'ul,ol',//element which will expand/collapse
         //nested: 'li',    //css selector of nested container elements
@@ -81,7 +81,7 @@ var T_Collapsible = this.Collapsible = new Class({
         }
 
         element.addEvent( 'click:relay({0}.{1},{0}.{2})'.xsubs(options.bullet,options.open,options.close),
-            function(e){ self.toggle(this,e); });
+            function(e){ e.stop(); self.toggle(this); });
 
     },
 
@@ -99,7 +99,7 @@ var T_Collapsible = this.Collapsible = new Class({
 
             if( target && (target.get('text').trim()!='') ){
 
-//console.log(bullet,target,self.initState(element,target));
+                //console.log(bullet,target,self.initState(element,target));
                 target.set('tween',{
                     property: options.fx,
                     onComplete: function(){ self.fxReset( this.element ); }
@@ -132,7 +132,7 @@ var T_Collapsible = this.Collapsible = new Class({
 
     },
 
-    toggle: function(bullet, event){
+    toggle: function(bullet){
 
         var self = this,
             cookie = self.cookie,
@@ -141,7 +141,6 @@ var T_Collapsible = this.Collapsible = new Class({
             element = nested ? bullet.getParent(nested) : self.element,
             target, state;
 
-        if( event ){ event.stop(); }
         if( element ){
             target = element.getElement(options.target);
             if( target ){

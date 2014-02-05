@@ -12,16 +12,15 @@ Credits:
 
 DOM structure:
     DOM structure of the JSPWiki Slimbox viewer.
-
->    div#slimbox
->        div.modal
->        div.viewport     //img, object or iframe element is inserted here
->            div.info
->                a.caption
->                a.next
->                a.prev
->            a.close
-
+    (start code)
+    div#slmbx
+        div.modal               //semi transparent screen overlay
+        div.viewport(.spin)     //img, object or iframe element is inserted here
+            a.controls.caption
+            a.controls.next
+            a.controls.prev
+            a.controls.close
+    (end)
 */
 Viewer.Slimbox = new Class({
 
@@ -29,15 +28,17 @@ Viewer.Slimbox = new Class({
     Binds: ['attach','key','update','resize'],
 
     options: {
-        loop: true,
-        width: 800, // Initial width of the box (in pixels)
-        height: 600, // Initial height of the box (in pixels)
-        hints: {
+        loop: false,  // (boolean) affects next/prev at last/first element 
+        width: 800,  // (int px) default width of the box
+        height: 600, // (int px) default height of the box
+        hints: {     // default controls
+            btn: 'Click to view {0}', 
             close: '&times;',
-            next: 'Next', //&#171;
-            prev: 'Previous', //&#187;
-            info: '{0} {1}.',
-            size: ' ({0}px &times; {1}px)'
+            next: '&gt;',  //&#171;  Next
+            prev: '&lt;',  //&#187;  Previous
+            nofm: '[{0}/{1}]',              //[page/#pages]
+            info: ' Direct link to {0}',    
+            size: ' ({0}px &times; {1}px)'  // (height x width)
         },
         keys: {
             close: ['esc','x','c'],
@@ -49,8 +50,10 @@ Viewer.Slimbox = new Class({
     initialize: function(options){
 
         var self = this.setOptions(options),
-            hints = self.options.hints;
+            hints = self.options.hints,
+            controls = 'a.controls.';
 
+        //helper function
         function clickFn(){
             if( this.match('.next')){ self.update(1); }
             else if( this.match('.prev')){ self.update(-1); }
@@ -58,37 +61,40 @@ Viewer.Slimbox = new Class({
         }
 
         $(document.body).grab([
-            'div.slmbx', { attach:self/*[self,'element'] contains the slimbox dialog box*/ }, [
-                'div.modal',{ events:{ click:clickFn } }, //semi transparent overlay
+            'div.slmbx', { attach:self }, [
+                'div.slmodal',{ events:{ click:clickFn } }, 
                 'div.viewport', { attach:[self,'viewport'], events:{ 'click:relay(a)':clickFn } }, [
                     //insert viewable iframe/object/img ...
-                    'a.info.caption',
-                    'a.info.next',  { html:hints.next },
-                    'a.info.prev',  { html:hints.prev },
-                    'a.info.close', { html:hints.close }
+                    controls+'caption',
+                    controls+'next',  { html:hints.next },
+                    controls+'prev',  { html:hints.prev },
+                    controls+'close', { html:hints.close }
                 ]
             ]
-        ].rendAr());
+        ].slick());
 
     },
 
     /*
     Function: get
-        Retrieve DOM elements inside the dialog container, based on a css selector.
+        Retrieve DOM elements inside the slimbox container, based on a css selector.
     Example:
-    >    this.get('a.info');
     >    this.get('a.next');
     */
     get: function( selector ){
+
         return this.element.getElement(selector);
+
     },
+
     /*
-    Function: get
-        Check if URL is recognized as viewable object/image/html...
+    Function: match
+        Check if the URL is recognized as a viewable object/image/html...
     */
     match: function(url){
-
+    
         return Viewer.match(url,this.options);
+
     },
 
     /*
@@ -97,24 +103,41 @@ Viewer.Slimbox = new Class({
 
     Arguments:
         elements - set of DOM elements
-    Return
-        set of clickable (viewable) elements
+        btn - (optional) slick selector to insert a slimbox button after each viewable link
+    Returns
+        set of DOM elements viewable via Slimbox    
+    Example
+    >   TheSlimbox.watch( $$('.slimbox a','a.slimbox-btn');  
+      
     */
-    watch: function(elements){
-        var self = this;
-
-        /*safety net
+    watch: function(elements, btn){
+    
+        var self = this, caption;
+        
         elements = $$(elements).filter( function(el){
-            return self.match( el.src || el.href );
-        });*/
-        return elements.each( function(el,idx){
-            el.addEvent('click',function(event){
-                event.stop();
-                self.show(elements, idx);
-            });
+            return self.match( el.src||el.href );
         });
 
+        return elements.each( function(el,idx){
+
+            caption = el.get('text') || el.title || el.alt;
+
+            if( btn ){ 
+                el = btn.slick({ href:el.src||el.href })
+                        .inject(el,'after');
+            }
+
+            el.set({
+                title: self.options.hints.btn.xsubs(caption),
+                events: { 
+                    click: function(ev){ ev.stop(); self.show(elements,idx); }
+                }
+            });
+
+        });
+            
     },
+
 
     /*
     Function: show
@@ -124,11 +147,13 @@ Viewer.Slimbox = new Class({
         cursor - index of first items to be viewed
     */
     show: function( elements, cursor ){
+    
         var self = this;
         self.elements = elements;
         self.cursor = cursor;
         self.attach( 1 /*true*/ );
         self.update( 0 );
+
     },
 
     /*
@@ -148,9 +173,8 @@ Viewer.Slimbox = new Class({
             });
         });
 
-        self.element.ifClass(open,'show');
-         //if(self.preload) self.preload.destroy();
-         self.reset();
+        self.element.ifClass(open,'active');
+        self.reset();
 
         document[fn]('keydown', self.key); //checkme: support arrow keys, etc.
 
@@ -188,7 +212,7 @@ Viewer.Slimbox = new Class({
 
     /*
     Function: update
-        Updates the viewport and the info box with caption, and next and previous links.
+        Updates the viewport and the controls with caption, next and previous links.
         Implements cursor loop-around logic.
 
     Arguments:
@@ -198,6 +222,7 @@ Viewer.Slimbox = new Class({
 
         var self = this,
             options = self.options,
+            hints = options.hints,
             elements = self.elements,
 
             max = elements.length,
@@ -221,15 +246,14 @@ Viewer.Slimbox = new Class({
 
         self.get('.caption').set({
             href: url,
-            html: options.hints.info.xsubs(
-                /*index*/ many ? (cursor+1)+"/"+max : "",
-                /*name*/ el.get('title')/*||''*/
-            )
+            html: 
+                ( many ? hints.nofm.xsubs( cursor+1, max)  : '' ) +
+                hints.info.xsubs( el.title || el.alt || el.get('text')/*||''*/)
         });
 
         self.viewport.addClass('spin');
-         //if( self.preload ){ self.preload.destroy(); self.preload = null;}
-         self.reset();
+        //if( self.preload ){ self.preload.destroy(); self.preload = null;}
+        self.reset();
         Viewer.preload( url, options, self.resize );
 
     },
@@ -251,6 +275,7 @@ Viewer.Slimbox = new Class({
 
         self.preload = preload;
 
+        //append viewport dimensions in px to the caption
         caption.set('html', caption.get('html') + self.options.hints.size.xsubs(height,width) );
 
         // viewport has css set to { top:50%, left:50% } for automatic centered positioning
@@ -261,9 +286,10 @@ Viewer.Slimbox = new Class({
                 //rely on css3 transitions... iso mootools morph
                 width:width, height:height, marginTop:-height/2, marginLeft:-width/2
             });
+            //mootools transition, in case css3 would not be available
             //.morph({ width:width, height:height, marginTop:-height/2, marginLeft:-width/2 });
 
-        if( !isImage ) viewport.grab( preload );
+        if( !isImage ) viewport.grab( preload ); //now include the viewer in the dom
 
     }
 

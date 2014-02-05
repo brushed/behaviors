@@ -1,10 +1,11 @@
 /*
 Plugin: Viewer.Carousel
-    Viewer plugin for cycling through elements like a carousel.
-    Unlike slimbox, the content is directly visible on the page.
+    Viewer plugin for automatic cycling through elements.
+    Inspired on bootstrap's implementation, relying on css3 transitions;
+    rewritten for mootools.
 
 Credit:
-    Inspired by  bootstrap-carousel.js v2.2.2 http://twitter.github.com/bootstrap/javascript.html#carousel
+    bootstrap-carousel.js v2.2.2 http://twitter.github.com/bootstrap/javascript.html#carousel
 
 Depends on:
     Viewer
@@ -19,27 +20,28 @@ DOM structure:
 
     becomes
     (start code)
-    div.carousel.slide
-      <ol class="carousel-indicators">
-        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-           <li data-target="#myCarousel" data-slide-to="1"></li>
-        <li data-target="#myCarousel" data-slide-to="2"></li>
-      </ol>
+    div.carousel[.slide]
+      
+      ol.carousel-indicators
+        li.active[data-target="#myCarousel"][data-slide-to="0"]
+        li[data-target="#myCarousel"][data-slide-to="1"]
+        li[data-target="#myCarousel"][data-slide-to="2"]
 
       <!-- Carousel items -->
       div.carousel-inner
-      div.active.item
-            a.xxx
-           div.item
-               a.xxx
+        div.item.active
+          img | object | iframe
         div.item
-    <!-- Carousel nav -->
-    a.carousel-control.left[href="#myCarousel"][data-slide="prev"] &lsaquo;
-    a.carousel-control.right[href="#myCarousel"][data-slide="next"] &rsaquo;
+          img | object | iframe
+        ...
+
+      <!-- Carousel nav -->
+      a.controls.prev[href="#myCarousel"][data-slide="prev"] &lt;
+      a.controls.next[href="#myCarousel"][data-slide="next"] &gt;
     (end)
 
 Example:
->    new Carousel(container, [el1, el2] );
+>    new Carousel(container, [el1, el2], {container:..., ...} );
 
 */
 Viewer.Carousel = new Class({
@@ -48,9 +50,9 @@ Viewer.Carousel = new Class({
     Implements: [Events, Options],
 
     options: {
-        cycle: 5000, //=> when set, the carousel automatically cycles through all items
-        width: 400, // Minimal width of the carousel (in pixels)
-        height: 300 // Minimal height of the carousel (in pixels)
+        cycle: 1e4, //=> when set, the carousel automatically cycles through all items
+        width: 200, // Minimal width of the carousel (in pixels)
+        height: 150 // Minimal height of the carousel (in pixels)
     },
 
     initialize : function(elements, options){
@@ -59,42 +61,53 @@ Viewer.Carousel = new Class({
             t = 'transitionend';
 
         options = self.setOptions(options).options;
+        //console.log('CAROUSEL Options: ',options);
+        
         self.css3 = Element.Events[t] ? t : null;
-        self.container = options.container;
+        self.element = options.container;
 
-        Viewer.preloads( $$(elements), { width:options.width, height:options.height }, self.build );
+        Viewer.preloads( $$(elements), options, self.build );
 
     },
 
     build: function(elements, width, height){
 
         var self = this,
-            items = [],
+            items = [], indicators = [],
             cycle = self.options.cycle,
-            NOP = function(){},
-            url, newEl;
+            NOP = function(){};
 
-        $$(elements).each( function(el){ items.push('div.item',[ el ]) });
-        items[0] +='.active';
+        //carousel has max-width set to 100%, to protect against very wide images
+        width = width.min( self.element.getSize().x );        
 
-        self.container.adopt([
-            'div.carousel', {
-                attach: self/*,'element'*/,
-                styles:{
-                    width: width,
-                    height: height
-                },
+        $$(elements).each( function(el,idx){ 
+            items.push('div.item',[ el, { styles: {
+                marginTop: ( height - el.height )/2, 
+                marginLeft: ((width > el.width) ? ( width - el.width )/2 : 0)
+            }}]);
+            indicators.push('li');
+        });
+        items[0] += '.active';
+        indicators[0] +='.active';
+
+        self.element.empty()
+            .set({
+                'class':'carousel', styles:{ width: width, height: height },
                 events:{
+                    'click:relay(li)':function(ev){ self.to(this.getAllPrevious().length); },
                     mouseenter: cycle ? self.stop : NOP,
                     mouseleave: cycle ? self.cycle : NOP
                 }
-            },[
+            })
+            .adopt([           
+                'ol.carousel-indicators',
+                    indicators,            
                 'div.carousel-inner',
-                    items,
-                'a.carousel-control.left[html=&lsaquo;]', {events:{ click: self.prev }},
-                'a.carousel-control.right[html=&rsaquo;]', {events:{ click: self.next }}
-            ]
-        ].rendAr());
+                    items, 
+                'a.controls.prev[html=&lt;]', {events:{ click: self.prev }},
+                'a.controls.next[html=&gt;]', {events:{ click: self.next }}
+                ].slick()
+            );
 
         //self.cycle();  only start cycling after a first mouseenter , next()
 
@@ -117,7 +130,7 @@ Viewer.Carousel = new Class({
             cycle = self.options.cycle;
 
         if( cycle && !self.sliding ){
-            self.stop(); /* make sure to clear tid */
+            self.stop(); // make sure to first clear the tid 
             self.tid = self.next.delay( cycle );
         }
 
@@ -139,14 +152,15 @@ Viewer.Carousel = new Class({
 
     /*
     Function: to
-        Slide directly to a specific element.
-        Not used.
+        Slide directly to a specific carousel item.
+        Not yet used.
     */
     to: function( pos ){
 
         var self = this,
-            item = self.get('.item')[pos],
-            active = self.get('.item').indexOf( self.get('.item.active')[0] );
+            items = self.get('.item'),
+            item = items[pos],
+            active = items.indexOf( items.filter('.active')[0] );
 
         if ( !item ) return;
 
@@ -174,25 +188,26 @@ Viewer.Carousel = new Class({
 
     /*
     Function:slide
-        Move carousel to the next slide.
-        It fully relies on css transition. If not supported, no animation-effects are applied
+        Move the carousel to the next item.
+        It fully relies on css3 transition. 
+        If not supported, no animation-effects are applied (lazy me)
 
     stable =>
-    >    .active    => left:0;
+    >    .active  => left:0;
     >    .next    => left:100%;
     >    .prev    => left:-100%;
 
     slide-type = next => Slide to left:
-    >    item.active.left    => left:-100%;
-    >    item.next.left        => left:0;
+    >    item.active.left   => left:-100%;
+    >    item.next.left     => left:0;
 
     slide-type = prev => Slide to right:
-    >    item.active.right   => left:100%;
-    >    item.prev.right     => left:0;
+    >    item.active.right  => left:100%;
+    >    item.prev.right    => left:0;
 
     Arguments
         - type : 'next','prev'
-        - next : element to be shown at end of the "slide" scroll  ( array )
+        - next : element to be shown at end of the "slide" ( array )
 
     */
     slide: function(type, next){
@@ -213,6 +228,7 @@ Viewer.Carousel = new Class({
         if( next.match('.active') ) return;
 
         next.addClass( type ); //.next or .prev
+        
         self.fireEvent('slide');
 
         if( css3 ){
@@ -233,12 +249,15 @@ Viewer.Carousel = new Class({
     slid:function(){
 
         var self = this,
-            newActive = self.get('.next,.prev')[0];
+            items = self.get('.item'),
+            newActive = self.get('.item.next,.item.prev')[0];
 
         if( newActive ){
 
-            self.get('.item').set('class','item');  //wipe out .active, .next, .prev, .left, .right
+            items.set('class','item');  //wipe out .active, .next, .prev, .left, .right
             newActive.addClass('active');
+            
+            self.get('li').set('class','')[items.indexOf(newActive)].addClass('active');
 
             self.sliding = false;
             self.cycle();
@@ -266,6 +285,7 @@ Example:
 !function(css3){
 
 var B = Browser,
+    NativeEvents = Element.NativeEvents,
     pfx = B.cssprefix = (B.safari || B.chrome || B.Platform.ios) ? 'webkit' : (B.opera) ? 'o' : (B.ie) ? 'ms' : '';
 
     for ( style in css3 ){
@@ -277,7 +297,7 @@ var B = Browser,
 
         if( document.createElement('div').style[ aTest ] != null ){
 
-            Element.NativeEvents[type] = Element.NativeEvents[aType] = 2;
+            NativeEvents[type] = NativeEvents[aType] = 2;
             Element.Events[type] = { base: aType };
 
         }

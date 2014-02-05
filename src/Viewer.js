@@ -1,9 +1,21 @@
 /*
 Viewer object
-    get: function to retrieve the media parms based on a url
-    store: array of pairs consisting of:
-        regexp string - matches the url
-        parms (function|object) - parms for the OBJECT (flash) or IFRAME
+    match(url,options): function to retrieve the media parms based on a url
+    preload(url,options,callback): preloads (created DOM object) the correct viewer
+        with the correct rendering paramaters (eg: used by Viewer.Slimbox)
+    preloads(elements,options,callback): preloads a set of viewer objects,
+        and calculates the minimals viewer-box dimensions (eg: used by Viewer.Carousel)
+    
+    LIB: data-array of pairs [['re1',{parms1}],['re2',{parms2}],..]
+        used by match() and preload() to identify the correct viewer & parameters.
+        This array can be customised and extended.
+        
+        regexp - (string) match against the url
+        parms - (function or object) returns the viewer parameters
+            'img' - to be rendered as IMG, directly in the browser
+            'url' - to be rendered as OBJECT (eg flash)
+            'src' - to be rendered as IFRAME
+            other-parameters with additional details
 */
 !function(){
 
@@ -25,6 +37,12 @@ this.Viewer = {
 
         });
 
+        //options.type = 'img'|'url'|'src' 
+        //options.type = 'img';
+        //console.log(options.type);
+        if( options.type && !result[options.type] ) return false
+
+
         return result;
     },
 
@@ -38,62 +56,69 @@ this.Viewer = {
             if( callback ) callback( preload, preload.width, preload.height );
         }
 
-        options = {id: 'VIEW.' + String.uniqueID(), width:options.width, height:options.height };
+        options = {
+            id: 'VIEW.' + String.uniqueID(), 
+            width:options.width, 
+            height:options.height 
+        };
 
         if( match.img ){
 
             preload = new Image();
             preload.onload = done;  //delayed onload to know height&width of the image
             preload.src = match.img;
-            return;
-
-        } else if( match.url ){
-
-            //ffs: add check for html5 enabled browsers & html5 enabled video sources
-            preload = $(new Swiff( match.url, Object.merge(options, {
-                params: {
-                    wmode: 'transparent',//'opaque', //'direct',
-                    //bgcolor: '#FFFFFF',
-                    allowfullscreen: 'true',
-                    allowscriptaccess: 'always'
-                }
-            }, match ) ) );
-
-        } else if( match.src ){
-
-            preload = new IFrame( Object.merge( options, match, { frameborder:0 } ) );
-            //The iframe loading actually starts only when the iframe is added to the dom
-            document.body.adopt(preload);
 
         } else {
+        
+            //ffs: add branch for html5 enabled browsers & html5 enabled video sources
+            //if( match.url5 ) ...
+            if( match.url ){
 
-            preload = new Element('p.error[html="Error"]');
+                preload = $(new Swiff( match.url, Object.merge(options, {
+                    params: {
+                        wmode: 'transparent',//'opaque', //'direct',
+                        //bgcolor: '#FFFFFF',
+                        allowfullscreen: 'true',
+                        allowscriptaccess: 'always'
+                    }
+                }, match ) ) );
+
+            } else if( match.src ){
+
+                preload = new IFrame( Object.merge( options, match, { frameborder:0 }));
+                //The actual loading starts only when the iframe gets added to the dom
+                //By default, the iframe is hidden during loading. (see Viewer.less)
+                document.body.adopt(preload);
+
+            } else {
+    
+                preload = new Element('p.error[html="Error"]');
+
+            }
+ 
+            done.delay(1); //sniff callback
 
         }
-
-        done.delay(1); //sniff
         //console.log("PRELOAD ", typeOf( preload ), preload );
 
     },
 
     preloads:function(elements, options, callback){
 
-        var countdown = elements.length,
+        var countdown = elements.length, //counting the preloaded objects !
             preloads = [],
-            w = options.width, //0,
-            h = options.height; //0;
+            w = options.width,
+            h = options.height;
 
         if( !countdown ) return this.preload(elements, options, callback);
 
         while( elements[0] ){
 
-            this.preload(elements.shift(), options, function(preload, width, height){
+            this.preload( elements.shift(), options, function(preload, width, height){
 
                 preloads.push( preload );
-                w = w.min(width);
-                h = h.min(height);
-                console.log( preloads.length,w,width,h,height, countdown==1?'done':'');
-
+                w = w.max(width);
+                h = h.max(height.toInt());
                 if( !--countdown && callback ) callback( preloads, w, h );
 
             });
@@ -115,7 +140,7 @@ Viewer.LIB.append([
     //google viewer for common formats
     ['.(tiff|pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)$',function(url){
         return {
-              src:'http://docs.google.com/viewer?embedded=true&url=' + encodeURIComponent(url), //url,
+            src:'http://docs.google.com/viewer?embedded=true&url=' + encodeURIComponent(url), //url,
             width:850,
             height:500
         }
@@ -126,9 +151,10 @@ Viewer.LIB.append([
 
         //href="https://maps.google.com/maps?q=Atomium,%20City%20of%20Brussels,%20Belgium&amp;output=embed"
         return {
-              src: url + '&output=embed',
+            src: url + '&output=embed',
             width:850,
-            height:500
+            height:500,
+            scrolling:'no' 
         }
 
     }],
@@ -136,11 +162,10 @@ Viewer.LIB.append([
 
     //add some mp3/audio player here
 
-
     ['facebook.com', function(url){
           url = 'http://www.facebook.com/v/' + url.split('v=')[1].split('&')[0];
           return {
-              url:url,
+            url:url,
             movie:url,
             classid: AdobeFlashPlayer,
             width:756, //320,
@@ -162,7 +187,7 @@ Viewer.LIB.append([
         return {
             //src: 'http://www.youtube.com/embed/'+url.split('v=')[1],
             url:'http://www.youtube.com/v/'+url.split('v=')[1],
-            width:480, //640
+            width:640, 
             height:385  //385
         }
     }],
@@ -220,6 +245,7 @@ Viewer.LIB.append([
             src:'http://embed.ted.com/talks/'+url.split('/')[4],
             width:853, //640, //560,
             height:480, //360, //315
+            scrolling:"no"
         }
     }],
 
@@ -243,9 +269,18 @@ Viewer.LIB.append([
         }
     }],
 
+    ['http://jsfiddle.net/',function(url){
+    console.log('fiddle');
+        return {
+            src: url+'embedded/',
+            width:'100%',
+            height:250
+        }   
+    }],
+
     ['https?://', function(url){
         return {
-            //default : catch iframe urls.
+            //default : catch iframe urls ; allow scrolling of eg external site's
             src:url
         }
     }]

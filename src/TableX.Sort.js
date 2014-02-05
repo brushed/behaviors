@@ -35,12 +35,13 @@ TableX.Sort = new Class({
     initialize: function(table, options){
 
         this.setOptions(options);
+        
         this.table = table = new TableX(table,{ minSize: 3 });
 
-        if( table ){
+        if( table && table.thead ){
             //table.table.rows[0].addEvent( 'click:relay(th)', this.sort.bind(this) );
             table.thead.addEvent( 'click', this.sort.bind(this) );
-            this.style( table.thead, 'sort' );
+            this.style( table.thead, this.options.css.sort );
         }
 
     },
@@ -59,7 +60,7 @@ TableX.Sort = new Class({
             th = event.target,
             sortAtoZ = th.hasClass(css.atoz) ? 'ztoa':'atoz';
 
-        this.style(th, "processing");
+        //this.style(th, "processing");
         table.refresh(
             th.hasClass( css.sort ) ?
                 rows.naturalSort( thead.indexOf(th) ) :

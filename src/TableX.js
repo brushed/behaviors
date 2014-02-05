@@ -24,7 +24,10 @@ var TableX = new Class({
         if( !self ){
 
             if( !table.match('table') ||
-                ( (minSize!=0)&&(table.rows.length < minSize) ) ) return null;
+                ( ( minSize>0 )&&( table.rows.length < minSize ) ) ){
+                console.log("Error TableX size: ",table," minSize:",minSize);
+                return false;
+            }
 
             table.TableX = self = this;
             self.table = table;
@@ -40,13 +43,15 @@ var TableX = new Class({
     Function:refresh
         Put array of table rows back into the table
     */
-    refresh: function(rows){
+    refresh: function( rows ){
+
+        //console.log(rows);
 
         if( rows ){
 
             var frag = document.createDocumentFragment();
-            rows.each( function(r){ frag.appendChild(r); });
-            this.table.appendChild(frag);
+            rows.each( function(r){ frag.appendChild(r); });            
+            this.table.tBodies[0].appendChild(frag);
 
         }
 
@@ -56,36 +61,39 @@ var TableX = new Class({
 
     /*
     Function: filter
-        Fetch set of gBar values from a table
+        Fetch a row or column from a table, based on a field-name 
         * check first-row to match field-name: return array with col values
         * check first-column to match field-name: return array with row values
-        * insert SPANs as place-holder of the missing gBars
+        * ?? insert SPANs as place-holder of the missing gBars
 
-    FIXME
     */
     filter: function(fieldName){
 
-        var rows = this.rows,
-            tlen = rows.length, h, l, r, result=[], i;
+        var rows = this.table.rows,
+            tlen = rows.length, col, l, r, i, 
+            result=[];
 
         if( tlen > 1 ){ /* check for COLUMN based table */
-            r = rows[0];
-            for( h=0, l=r.cells.length; h<l; h++ ){
-                if( r.cells[h].getText().trim() == fieldName ){
-                    //select a COLUMN
-                    for( i=1; i< tlen; i++)
-                        //result.push( new Element('span').wraps(table.rows[i].cells[h]) );
-                        result.push( rows[i].cells[h] );
+            r = rows[0]; //header row
+
+            for( col=0, l=r.cells.length; col<l; col++ ){
+
+                if( $(r.cells[col]).get('text').trim() == fieldName ){
+
+                    //take this COLUMN
+                    for( i=1; i < tlen; i++)
+                        //result.push( new Element('span').wraps(table.rows[i].cells[col]) );
+                        result.push( rows[i].cells[col] );
                     return result;
                 }
             }
         }
 
-        for( h=0; h < tlen; h++ ){  /* check for ROW based table */
-            r = rows[h];
-            if( r.cells[0].getText().trim() == fieldName ){
-                //select a ROW
-                return  Array.slice(r,1);
+        for( i=0; i < tlen; i++ ){  // check for ROW based table 
+            r = rows[i]; 
+            if( $(r.cells[0]).get('text').trim() == fieldName ){
+                //take this ROW
+                return  Array.slice(r.cells,1);
             }
         }
 

@@ -20,7 +20,7 @@ TableX.Zebra = function(table, options){
             if( isArr ){
                 row.setStyle('background-color', colors[j]||'');
             } else {
-                row.ifClass(j, 'odd');
+                row.ifClass(j, 'odd', '');
             }
         });
     };
