@@ -38,33 +38,25 @@ Options:
 DOM-structure:
 (start code)
     // original DOM-structure
-    span.gbBar 100 
+    div.graphBar-(options)
+        span.gbBar 100 
 
-    // horizontal bar
-    span.graphBar[style="border-left-width: 85px;"]x
-    span.gbBar 150
+    //becomes, based on BOOTSTRAP
+    //horizontal bar
+    span.gb-group(.striped.active)[width:125px] 
+      span.gb-bar[style="background:blue;width:40%"]
+    span.gBar 100
+    
+    //vertical bar
+    span.gb-group(.striped.active)(.vertical)[heigh:125px] 
+      span.gb-bar[style="background:blue;height:100%;width:100%"]
+    span.gBar 100
 
-    // vertical bar
-    div[style="height: 77px; position: relative;"]
-       span.graphBar[style="border-color: rgb(255, 0, 0);
-                    border-bottom-width: 20px;
-                    position: absolute;
-                    width: 20px;
-                    bottom: 0px;]
-       span[style="position: relative; top: 40px;] 20
-
-    // progress bar
-    span.graphBar[style="border-color:red; border-left-width: 20px;"]x
-    span.graphBar[style="border-color:blue; border-left-width: 300px; margin-left: -1ex;"]x
-    span.gbBar 100
-
-
->>based on BOOTSTRAP
+    //progress bar
     span.gb-group[width:125px] 
       span.gb-bar[style="background:blue;width:40%"]
       span.gb-bar[style="background:red;width:60%"]
     span.gbBar 100
-
 (end)
 
 Examples:
@@ -101,6 +93,7 @@ var GraphBar = new Class({
         self.setOptions(options);
         
         clazz = this.options.container;
+        
         if( args.indexOf( clazz )==0 ){
 
             options = self.getArguments( args.slice(clazz.length) );
@@ -195,7 +188,7 @@ var GraphBar = new Class({
 
 
         //color invertor
-		if( !color2 && color1 && (isGauge||isProgress)) color2 = color1.invert();
+        if( !color2 && color1 && (isGauge||isProgress)) color2 = color1.invert();
 
         //color mixer
         if( !isProgress && color2 ) color1 = color1.mix(color2, 100*(isGauge ? val : percent)); 

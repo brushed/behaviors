@@ -8,15 +8,10 @@ Example:
 DOM structure
 (start code)
     div.commentbox
-    //becomes
-    fieldset.commentbox
-        legend LegendTitle
-
-    //based on BOOTSTRAP Panels
-    div.commentbox
         h2|h3|h4 title
         ..body..
-    //becomes
+
+    //becomes, based on BOOTSTRAP Panels
     div.panel.panel-default
         div.panel-header
         div.panel-body

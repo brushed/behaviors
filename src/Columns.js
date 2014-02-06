@@ -5,7 +5,7 @@ Script: Columns
     Column widths are equal and automatically calculated.
     Optionally, you can specify the width in pixel(px) for the columns.
 
-    TODO: use HTML5/CSS3 columns options if available
+    FSS: use HTML5/CSS3 columns options if available
 
 Arguments:
     width - (optional) column width in pixel(px)
@@ -17,12 +17,13 @@ Example:
         ----
         column-text1 ...
     /%
+(end)
+
 DOM Structure
 (start code)
     div-columns
         div.col[styles={width:xx%}]
         div.col[styles={width:xx%}]
-(end)
 (end)
 */
 function Columns(element, options){
@@ -34,7 +35,7 @@ function Columns(element, options){
     if( columnCount /*>0*/ ){
 
         columnCount++;
-        width = ( args[0] ) ? args[0]/columnCount+'px' : 95/columnCount+'%';
+        width = ( args[0] ) ? args[0]/columnCount+'px' : 100/columnCount+'%';
 
         element
             .addClass('columns')

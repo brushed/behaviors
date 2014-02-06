@@ -3,8 +3,8 @@ Class: TabbedSection
     Creates tabs, based on some css-class information
 
 Wiki Markup:
-    (start code)
-    Original markup
+(start code)
+    //Original markup
     %%tabbedSection
     %%tab-FirstTab
         ...
@@ -13,12 +13,10 @@ Wiki Markup:
         ...
     /%
     /%
-    (end)
 
-    Simplified markup
-    Every tabs is defined by headers tag. (!, !!, !!!)
-    The level of the first header element determines the header-level of all tabs.
-    (start code)
+    //Simplified markup
+    //Every tab is defined by headers tag. (!, !!, !!!)
+    //The level of the first header element determines the header-level of all tabs.
     %%tabs
     !First tab title
         ...
@@ -26,7 +24,6 @@ Wiki Markup:
         ...
     /%
 (end)
-
 
 DOM structure before:
     (start code)
@@ -105,7 +102,7 @@ var Tab = new Class({
 
     /*
     Function: getPanes
-        Generic function to collect the panes of tabs, accordions, etc.
+        Generic function to collect the tab panes.  Reused by accordions, etc.
         1) panes = sections enclosed by tab-container elements, the tab caption is derived from the classname
         2) panes = sections divided by h<n> elements; 
         
