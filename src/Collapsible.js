@@ -44,21 +44,20 @@ Example:
 */
 !function(){
 
-var T_Collapsible = this.Collapsible = new Class({
+var TCollapsible = this.Collapsible = new Class({
 
     Implements: Options,
 
     options: {
         bullet: 'b.bullet', //'b.bullet[html=&bull;]' //css selector of clickable bullet
-        hint: { open:"collapse",close:"expand" },
+        hint: { open:"collapse", close:"expand" },
         open: 'xpand',
         close: 'clpse',
 
-        //target: 'ul,ol',//element which will expand/collapse
-        //nested: 'li',    //css selector of nested container elements
-
-        //collapsed: 'ol',//initial collapsed element
         //cookie: null,    //Cookie.Flags - persistent store of the state of the targets
+        //target: 'ul,ol', //the element which will expand/collapse
+        //nested: 'li',    //(optional) css selector of nested container elements
+        //collapsed: 'ol', //css selector to check if default state is collapsed
 
         fx: 'height',    //style attribute to animate on collapse
         fxy: 'y',        //scroll direction to animate on collapse,
@@ -70,18 +69,24 @@ var T_Collapsible = this.Collapsible = new Class({
         var self = this;
 
         self.element = element = document.getElement(element);
-        self.cookie = options && options.cookie;
-        //note: setOptions makes a copy of Cookie object, so first retrieve the cookie, before invoking setOptions
+        //note: setOptions() makes a copy of any object, so first retrieve the cookie!
+        self.cookie = options && options.cookie;        
         options = self.setOptions(options).options;
-
+        
         if( options.nested ){
+
             element.getElements( options.nested ).each( self.build, self );
+
         } else {
+
             self.build( element );
+
         }
 
-        element.addEvent( 'click:relay({0}.{1},{0}.{2})'.xsubs(options.bullet,options.open,options.close),
-            function(e){ e.stop(); self.toggle(this); });
+        element.addEvent(         
+            'click:relay({0}.{1},{0}.{2})'.xsubs(options.bullet,options.open,options.close),
+            function(event){ event.stop(); self.toggle(this); }
+        );
 
     },
 
@@ -94,21 +99,25 @@ var T_Collapsible = this.Collapsible = new Class({
 
         if( !self.skip(element) ){
 
-            bullet = element.getElement(bullet) || new Element(bullet).inject(element,'top');
+            bullet = element.getElement(bullet) || bullet.slick().inject(element,'top');
             target = element.getElement(options.target);
 
             if( target && (target.get('text').trim()!='') ){
 
-                //console.log(bullet,target,self.initState(element,target));
-                target.set('tween',{
-                    property: options.fx,
-                    onComplete: function(){ self.fxReset( this.element ); }
-                });
+                //console.log("FX tween",bullet,target,self.initState(element,target));                
+                if( options.fx ){ 
+                    target.set('tween',{
+                        property: options.fx,
+                        onComplete: function(){ self.fxReset( this.element ); }
+                    });
+                }
+                
                 self.update(bullet, target, self.initState(element,target), true);
             }
         }
     },
 
+    //dummy skip function, can be overwritten by descendent classes
     skip: function( /*element*/ ){
         return false;
     },
@@ -156,11 +165,15 @@ var T_Collapsible = this.Collapsible = new Class({
         var options = this.options, open=options.open, close=options.close;
 
         if( bullet ){
+
             bullet.ifClass(expand, open, close)
-                  .set( 'title',options.hint[expand ? 'open' : 'close'].localize() );
+                  .set( 'title', options.hint[expand ? 'open' : 'close'].localize() );
+
         }
         if( target ){
+
             this.animate( target.ifClass(expand, open, close), expand, force );
+
         }
 
     },
@@ -171,10 +184,14 @@ var T_Collapsible = this.Collapsible = new Class({
             fxReset = this.options.fxReset,
             max = (fxReset!='auto') ? fxReset : element.getScrollSize()[this.options.fxy];
 
-        if( force ){
-            fx.set( expand ? fxReset : 0);
-        } else {
-            fx.start( expand ? max : [max,0] );
+        if( this.options.fx ){ 
+
+            if( force ){
+                fx.set( expand ? fxReset : 0);
+            } else {
+                fx.start( expand ? max : [max,0] );
+            }
+
         }
 
     },
@@ -182,11 +199,17 @@ var T_Collapsible = this.Collapsible = new Class({
     fxReset: function(element){
 
         var options = this.options;
-        if( this.getState(element) ){ element.setStyle(options.fx, options.fxReset); }
+        
+        if( options.fx && this.getState(element) ){ 
+
+            element.setStyle(options.fx, options.fxReset); 
+
+        }
 
     }
 
 });
+
 
 /*
 Class: Collapsible.List
@@ -205,22 +228,42 @@ DOM Structure:
                     li ... collapsible content ...
     (end)
 */
-T_Collapsible/*this.Collapsible*/.List = new Class({
-    Extends:T_Collapsible,
+TCollapsible/*this.Collapsible*/.List = new Class({
+
+    Extends:TCollapsible,
 
     initialize: function(element,options){
 
-        this.parent( element,Object.merge({target:'ul,ol', collapsed:'ol', nested:'li'},options));
+        this.parent( element, Object.merge({
+            target:   'ul,ol', 
+            nested:   'li',
+            collapsed:'ol' 
+        },options));
 
     },
 
-    // skip empty elements
+    // SKIP empty LI elements  (so, do not insert collapse-bullets)
+    // LI element is not-empty when is has
+    // - a child-node different from ul/ol 
+    // - a non-empty #text-nodes
+    // Otherwise, it is considered
     skip: function(element){
 
-        for( var skip=true, n=element.firstChild; skip && n && n.nodeType==3; n=n.nextSibling ){
-            skip = n.nodeValue.trim()=="";
+        var n = element.firstChild,isTextNode, re=/ul|ol/i;
+
+        while( n ){
+
+            isTextNode = (n.nodeType==3);
+
+            if( ( !isTextNode && ( !re.test(n.tagName) ) )
+             || (  isTextNode && ( n.nodeValue.trim()!='') ) ){
+
+                     return false;
+            }
+            n=n.nextSibling;
         }
-        return skip;
+
+        return true; //skip this element
 
     }
 
@@ -237,46 +280,56 @@ Options:
 
 DOM Structure:
     (start code)
-    div.collapsebox
-        b.bullet.xpand|clpse[onclick="..."]
-        h1 title
-        div.xpand|clpse
+    div.collapsebox.panel.panel-default
+        div.panel-heading
+            b.bullet.xpand|clpse[onclick="..."]
+            h4.panel-title title
+        div.panel-body.xpand|clpse
             .. collapsible content ..
     (end)
 
 */
-T_Collapsible/*this.Collapsible*/.Box = new Class({
-    Extends:T_Collapsible,
+TCollapsible/*this.Collapsible*/.Box = new Class({
+
+    Extends:TCollapsible,
 
     initialize:function(element,options){
 
-        //target = last-child,  !^  => check
-        //convert boolean into css-selector: target.match('div') is always true
-        options.collapsed = options.collapsed ? 'div' : '';
-        this.parent( element, Object.merge( {target:'!^'},options ) );
+        //FFS: how to protect against empty boxes..
+        //if( element.getChildren().length >= 2 ){      //we don't do empty boxes
 
+            options.collapsed = options.collapsed ? 'div':''; // T/F converted to matching css selector
+            options.target = options.target || '!^'; //or  '> :last-child'
+
+            this.parent( element, options );
+        //}
     },
 
     build: function( element ){
 
-        var options = this.options, title, body, next;
+        var options = this.options, heading, body, next
+            panelCSS = 'panel'.fetchContext(element);
 
-        //add body container after the first (title) element
+        //protect against double invocations
         if( !element.getElement( options.bullet ) ){
 
-            title = element.getFirst();  //typically and h1 element, acting as box title
+            //build bootstrap panel layout
+            element.className += ' '+panelCSS;
 
-            if( title && title.nextSibling ){
+            heading = ['div.panel-heading',[options.bullet]].slick().wraps(
+                element.getFirst().addClass('panel-title')
+            );
 
-                body = new Element('div');
-                while( next = title.nextSibling ) body.appendChild( next );
-                this.parent( element.grab(body) );
+            body = 'div.panel-body'.slick();
+                while(next = heading.nextSibling) body.appendChild( next );
 
-            }
+            //if( body.get('text').trim()!='' ) this-is-and-empty-box !!
+
+            this.parent( element.grab( 'div'.slick().grab(body) ) );
 
         }
-
     }
+
 });
 
 }();
