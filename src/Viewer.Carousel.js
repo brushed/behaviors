@@ -51,8 +51,8 @@ Viewer.Carousel = new Class({
 
     options: {
         cycle: 1e4, //=> when set, the carousel automatically cycles through all items
-        width: 200, // Minimal width of the carousel (in pixels)
-        height: 150 // Minimal height of the carousel (in pixels)
+        width: 400, // Default width of the carousel (in pixels)
+        height: 300 // Default height of the carousel (in pixels)
     },
 
     initialize : function(elements, options){
@@ -61,7 +61,7 @@ Viewer.Carousel = new Class({
             t = 'transitionend';
 
         options = self.setOptions(options).options;
-        //console.log('CAROUSEL Options: ',options);
+        console.log('CAROUSEL Options: ',options);
         
         self.css3 = Element.Events[t] ? t : null;
         self.element = options.container;
@@ -72,19 +72,28 @@ Viewer.Carousel = new Class({
 
     build: function(elements, width, height){
 
+        console.log("CAROUSEL BUILD: ",elements.length,width,height);
+
         var self = this,
             items = [], indicators = [],
             cycle = self.options.cycle,
             NOP = function(){};
 
-        //carousel has max-width set to 100%, to protect against very wide images
-        width = width.min( self.element.getSize().x );        
+
 
         $$(elements).each( function(el,idx){ 
-            items.push('div.item',[ el, { styles: {
-                marginTop: ( height - el.height )/2, 
-                marginLeft: ((width > el.width) ? ( width - el.width )/2 : 0)
-            }}]);
+        
+            console.log(height,el.height, width, el.width);
+            items.push('div.item',[ 
+                el, { styles: {
+                    //add padding to center the item inside its container, but still fill 100% of the available space
+                    padding: Number(height - el.height).limit(0,height)/2 +"px "+ 
+                             Number(width - el.width).limit(0, width)/2 +"px"
+                }},
+                'div.carousel-caption', { 
+                    html: (el.title || el.alt || el.get('text')) 
+                }
+            ]);
             indicators.push('li');
         });
         items[0] += '.active';
@@ -92,14 +101,17 @@ Viewer.Carousel = new Class({
 
         self.element.empty()
             .set({
-                'class':'carousel', styles:{ width: width, height: height },
+                'class':'carousel', 
+                //maxHeight,maxHeight will auto-scale the images if they are too big to fit
+                styles:{ maxWidth: width, maxHeight: height },
                 events:{
                     'click:relay(li)':function(ev){ self.to(this.getAllPrevious().length); },
                     mouseenter: cycle ? self.stop : NOP,
                     mouseleave: cycle ? self.cycle : NOP
                 }
             })
-            .adopt([           
+            .adopt([ 
+                'div.carousel-progress', /*ffs {'transitionDuration':self.cycle/1e3+'s'},*/         
                 'ol.carousel-indicators',
                     indicators,            
                 'div.carousel-inner',
@@ -110,6 +122,7 @@ Viewer.Carousel = new Class({
             );
 
         //self.cycle();  only start cycling after a first mouseenter , next()
+
 
     },
 
@@ -132,6 +145,7 @@ Viewer.Carousel = new Class({
         if( cycle && !self.sliding ){
             self.stop(); // make sure to first clear the tid 
             self.tid = self.next.delay( cycle );
+            self.element.addClass('sliding');
         }
 
     },
@@ -147,6 +161,7 @@ Viewer.Carousel = new Class({
         //console.log("stop ", this.tid, this.sliding, arguments);
         clearTimeout( this.tid );
         this.tid = null;
+        this.element.removeClass('sliding');
 
     },
 
@@ -166,7 +181,7 @@ Viewer.Carousel = new Class({
 
         if( self.sliding ){
 
-            /*console.log('concurrency betweeen slide() and pos() - wf "slid" event to occur');*/
+            //console.log('concurrency betweeen slide() and pos() - wf "slid" event to occur');
             self.element.addEvent('slid', self.to.pass(pos) );
 
         } else if ( !item.match('.active') ){

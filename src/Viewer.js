@@ -53,7 +53,8 @@ this.Viewer = {
             preload;
 
         function done(){
-            if( callback ) callback( preload, preload.width, preload.height );
+            console.log( match.width, preload.width.toInt(), match.height, preload.height.toInt(), preload);
+            if( callback ) callback( preload, preload.width.toInt(), preload.height.toInt() );
         }
 
         options = {
@@ -66,6 +67,8 @@ this.Viewer = {
 
             preload = new Image();
             preload.onload = done;  //delayed onload to know height&width of the image
+            preload.alt = element.alt;
+            //preload.title = element.title;
             preload.src = match.img;
 
         } else {
@@ -119,6 +122,7 @@ this.Viewer = {
                 preloads.push( preload );
                 w = w.max(width);
                 h = h.max(height.toInt());
+//console.log("preloads.length, w,h);
                 if( !--countdown && callback ) callback( preloads, w, h );
 
             });
@@ -270,10 +274,9 @@ Viewer.LIB.append([
     }],
 
     ['http://jsfiddle.net/',function(url){
-    console.log('fiddle');
         return {
             src: url+'embedded/',
-            width:'100%',
+            width:800,
             height:250
         }   
     }],

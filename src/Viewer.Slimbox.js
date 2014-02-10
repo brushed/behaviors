@@ -28,7 +28,7 @@ Viewer.Slimbox = new Class({
     Binds: ['attach','key','update','resize'],
 
     options: {
-        loop: false,  // (boolean) affects next/prev at last/first element 
+        loop: true,  // (boolean) affects next/prev at last/first element 
         width: 800,  // (int px) default width of the box
         height: 600, // (int px) default height of the box
         hints: {     // default controls
@@ -37,8 +37,8 @@ Viewer.Slimbox = new Class({
             next: '&gt;',  //&#171;  Next
             prev: '&lt;',  //&#187;  Previous
             nofm: '[{0}/{1}]',              //[page/#pages]
-            info: ' Direct link to {0}',    
-            size: ' ({0}px &times; {1}px)'  // (height x width)
+            size: ' ({0}px &times; {1}px)',  // (height x width)
+            caption: ' Go to {0}'    
         },
         keys: {
             close: ['esc','x','c'],
@@ -99,7 +99,8 @@ Viewer.Slimbox = new Class({
 
     /*
     Function: watch
-        Install click handlers on a group of images/objects/media links.
+        Install click handlers on a group of images/objects/media links,
+        and optionally add slimbox click-buttons.
 
     Arguments:
         elements - set of DOM elements
@@ -123,16 +124,13 @@ Viewer.Slimbox = new Class({
             caption = el.get('text') || el.title || el.alt;
 
             if( btn ){ 
-                el = btn.slick({ href:el.src||el.href })
-                        .inject(el,'after');
+                el = btn.slick({ 
+                    href:el.src||el.href, 
+                    title: self.options.hints.btn.xsubs(caption) 
+                }).inject(el,'after');
             }
 
-            el.set({
-                title: self.options.hints.btn.xsubs(caption),
-                events: { 
-                    click: function(ev){ ev.stop(); self.show(elements,idx); }
-                }
-            });
+            el.addEvent('click', function(ev){ ev.stop(); self.show(elements,idx); });
 
         });
             
@@ -182,11 +180,8 @@ Viewer.Slimbox = new Class({
 
     reset: function(){
 
-         var preload = this.preload;
-         if( preload ){
-             preload.destroy();
-             this.preload = null;
-         }
+        this.viewport.getElements(':not(.controls)').destroy();
+        this.preload = null;
 
     },
 
@@ -228,18 +223,18 @@ Viewer.Slimbox = new Class({
             max = elements.length,
             many = max > 1,
 
-            loop = function(index){
-                return options.loop ? (index >= max) ? 0 : ( index < 0 ) ? max-1 : index : index;
+            incr = function(num){
+                return options.loop ? (num >= max) ? 0 : (num < 0) ? max-1 : num : num;
             },
-            cursor = loop( self.cursor+increment ).limit( 0, max-1 ), /*new cursor value*/
+            cursor = incr( self.cursor+increment ).limit( 0, max-1 ), //new cursor value
 
             el, url;
 
         if( increment!=0 && (cursor == self.cursor)){ return; }
 
         self.cursor = cursor;
-        self.get('.prev')[ (many && (loop(cursor-1) >= 0 )) ? 'show' : 'hide']();
-        self.get('.next')[ (many && (loop(cursor+1) < max)) ? 'show' : 'hide']();
+        self.get('.prev')[ (many && (incr(cursor-1) >= 0 )) ? 'show' : 'hide']();
+        self.get('.next')[ (many && (incr(cursor+1) < max)) ? 'show' : 'hide']();
 
         el = elements[cursor];
         url = el.href||el.src; //url = encodeURIComponent(url);
@@ -248,12 +243,13 @@ Viewer.Slimbox = new Class({
             href: url,
             html: 
                 ( many ? hints.nofm.xsubs( cursor+1, max)  : '' ) +
-                hints.info.xsubs( el.title || el.alt || el.get('text')/*||''*/)
+                hints.caption.xsubs( el.title || el.alt || el.get('text')/*||''*/)
         });
 
-        self.viewport.addClass('spin');
+        self.viewport.addClass('loading');
         //if( self.preload ){ self.preload.destroy(); self.preload = null;}
         self.reset();
+        //alert('wait');
         Viewer.preload( url, options, self.resize );
 
     },
@@ -276,11 +272,11 @@ Viewer.Slimbox = new Class({
         self.preload = preload;
 
         //append viewport dimensions in px to the caption
-        caption.set('html', caption.get('html') + self.options.hints.size.xsubs(height,width) );
+        caption.set('html', caption.get('html') + self.options.hints.size.xsubs(width,height) );
 
         // viewport has css set to { top:50%, left:50% } for automatic centered positioning
         viewport
-            .removeClass('spin')
+            .removeClass('loading')
             .setStyles({
                 backgroundImage: isImage ? 'url(' + preload.src + ')' : 'none',
                 //rely on css3 transitions... iso mootools morph
