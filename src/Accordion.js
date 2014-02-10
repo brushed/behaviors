@@ -72,7 +72,7 @@ var Accordion = new Class({
     
         var panes = this.getPanes( container ),
             nav, i=0, pane, name, toggle,
-            type,
+            type, position,
             active = 'active',
             toggles = [],
             contents = [],
@@ -80,11 +80,13 @@ var Accordion = new Class({
         
         this.setOptions(options);
         type = this.options.type;
-
+        position = this.options.position;
+        if(position) position = ".nav-stacked." + position ;
+        
         nav = (type=='tabs') ? 'ul.nav.nav-tabs' :
-               (type=='pills') ? 'ul.nav.nav-pills.nav-stacked.' + (this.options.position||'') : 
+               (type=='pills') ? 'ul.nav.nav-pills' + (position||'') : 
                  false;
-               
+
         if( nav ) nav = nav.slick().inject(container,'before');
         container.addClass('panel-group');
 
