@@ -53,7 +53,7 @@ this.Viewer = {
             preload;
 
         function done(){
-            console.log( match.width, preload.width.toInt(), match.height, preload.height.toInt(), preload);
+            //console.log( match.width, preload.width.toInt(), match.height, preload.height.toInt(), preload);
             if( callback ) callback( preload, preload.width.toInt(), preload.height.toInt() );
         }
 
