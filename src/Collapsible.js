@@ -49,13 +49,13 @@ var TCollapsible = this.Collapsible = new Class({
     Implements: Options,
 
     options: {
-        bullet: 'b.bullet', //'b.bullet[html=&bull;]' //css selector of clickable bullet
+        bullet: 'b.bullet', //clickable bullet
         hint: { open:"collapse", close:"expand" },
         open: 'xpand',
         close: 'clpse',
 
-        //cookie: null,    //Cookie.Flags - persistent store of the state of the targets
-        //target: 'ul,ol', //the element which will expand/collapse
+        //cookie: null,    //Cookie.Flags - persist the state of the targets
+        //target: 'ul,ol', //the elements which will expand/collapse
         //nested: 'li',    //(optional) css selector of nested container elements
         //collapsed: 'ol', //css selector to check if default state is collapsed
 
@@ -69,7 +69,7 @@ var TCollapsible = this.Collapsible = new Class({
         var self = this;
 
         self.element = element = document.getElement(element);
-        //note: setOptions() makes a copy of any object, so first retrieve the cookie!
+        //note: setOptions() makes a copy of all objects, so first copy the cookie!
         self.cookie = options && options.cookie;        
         options = self.setOptions(options).options;
         
@@ -83,7 +83,8 @@ var TCollapsible = this.Collapsible = new Class({
 
         }
 
-        element.addEvent(         
+        element.addEvent( 
+            //EG: 'click:relay(b.bullet.xpand,b.bullet.clpse)'        
             'click:relay({0}.{1},{0}.{2})'.xsubs(options.bullet,options.open,options.close),
             function(event){ event.stop(); self.toggle(this); }
         );
@@ -152,6 +153,8 @@ var TCollapsible = this.Collapsible = new Class({
 
         if( element ){
             target = element.getElement(options.target);
+
+console.log(element,target);
             if( target ){
                 state = !self.getState(target);
                 self.update( bullet, target, state );
@@ -235,7 +238,7 @@ TCollapsible/*this.Collapsible*/.List = new Class({
     initialize: function(element,options){
 
         this.parent( element, Object.merge({
-            target:   'ul,ol', 
+            target:   '> ul, > ol', 
             nested:   'li',
             collapsed:'ol' 
         },options));
@@ -299,7 +302,7 @@ TCollapsible/*this.Collapsible*/.Box = new Class({
         //if( element.getChildren().length >= 2 ){      //we don't do empty boxes
 
             options.collapsed = options.collapsed ? 'div':''; // T/F converted to matching css selector
-            options.target = options.target || '!^'; //or  '> :last-child'
+            options.target = options.target || '!^'; //or  '> :last-child' or '> .panel-body'
 
             this.parent( element, options );
         //}
@@ -310,7 +313,7 @@ TCollapsible/*this.Collapsible*/.Box = new Class({
         var options = this.options, heading, body, next
             panelCSS = 'panel'.fetchContext(element);
 
-        //protect against double invocations
+        //we don't do double invocations
         if( !element.getElement( options.bullet ) ){
 
             //build bootstrap panel layout
