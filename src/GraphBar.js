@@ -97,7 +97,6 @@ var GraphBar = new Class({
         if( args.indexOf( clazz )==0 ){
 
             options = self.getArguments( args.slice(clazz.length) );
-
             bars = el.getElements('.'+ options.gBar + options.barName);
 
             if( !bars[0] && ( table = el.getElement('table') )){ 
