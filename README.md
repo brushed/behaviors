@@ -1,15 +1,13 @@
-Dynamic Styles
+Behaviors
 ==============
 
-Alpha - work in progress / use at your own risk
-
-Dynamic styles provide advanced styling possibilities for your html elements.
-Dynamic Styles add dynamic behavior to standard dom elements.
+The Behavior classes provide enhanced styling capabilities for your DOM elements.
+They add dynamic behavior to standard dom elements.
 The supporting javascript routines are typically initialized at page load.
 
 	var behavior = new Behavior();
 
-	behavior.add('ul.collapse', Collapsible.List,{some-options});
+	behavior.add('ul.collapse', Collapsible.List,{some-options} );
 	... //other behaviors
 
 	window.addEvent('domready', function(){ behavior.update(); });
@@ -22,8 +20,8 @@ The supporting javascript routines are typically initialized at page load.
 
 - Collapsible : turn ordinary lists into collapsible trees and boxes.
 	- Collapsible
-	- Collapsible.List : make clickable list-items, to expand of collapse.
 	- Collapsbile.Box : with header and body, which slides in/out vertically.
+	- Collapsible.List : make clickable list-items, to expand of collapse.
 
 - Columns : create multi-column news-paper effect 
 
@@ -31,27 +29,22 @@ The supporting javascript routines are typically initialized at page load.
 
 - Element.Reflect : generates a reflection at the bottom of an image.
 
-- Graph-bars : horizontal or vertical graph bars inline or inside tables.
-      Styling is now based on bootstrap progress-bars.
+- GraphBar : create horizontal or vertical graph bars inline or inside tables.
+      Styling is based on bootstrap progress-bars. (only css, no images)
 
 - TableX : enrich your tables with extended functionalities.
-	- Tablex
-	- Tablex.Sort : convert ordinary html tables into sortable tables.
-	- Tablex.Filter : add advanced filtering and highlighting of table rows, and columns.
-	- Tablex.Zebra : add alternate row colors to your tables.
+	- Tablex : abstract parent class
+	- Tablex.Sort : convert ordinary html tables into sortable DOM tables.
+	- Tablex.Filter : add advanced filtering and highlighting of DOM tables.
+	- Tablex.Zebra : add alternate row colors to your DOM tables.
 
 - Tabs : create tabular sections in html pages.
 
 - Viewer
-	- Viewer : embed a video-player in a html page, by referring to the
-		full url. With support for eg. youtube, vimeo, ..., external content.
+	- Viewer : embed a media-player in a html page, based on the full url of common
+		media sites: with support for eg. youtube, vimeo, ..., and external content.
+	- Viewer.Slimbox : generates a modal overlay box with a Viewer media-player 
+	    to view one or more images, video, or external content. (similar to lightbox)
 	- Viewer.Carousel: embed a carousel viewer which (auto)cycles through
 	    a set of images, video, external content.
-		Unlike slimbox, the content is directly visible on the page.
-	- Viewer.Slimbox : generates a modal overlay box with a rich media 
-	    viewer to view one or more images, video, or external content.
-    	(similar to lightbox)
 
-
-- Other dynamic styles (not included)
-	- Prettify : add code-coloring to a preformatted block of text. See Prettify Sourcecode
