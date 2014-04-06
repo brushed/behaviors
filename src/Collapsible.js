@@ -154,7 +154,6 @@ var TCollapsible = this.Collapsible = new Class({
         if( element ){
             target = element.getElement(options.target);
 
-console.log(element,target);
             if( target ){
                 state = !self.getState(target);
                 self.update( bullet, target, state );
