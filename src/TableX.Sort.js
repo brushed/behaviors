@@ -41,7 +41,7 @@ TableX.Sort = new Class({
         if( table && table.thead ){
             //table.table.rows[0].addEvent( 'click:relay(th)', this.sort.bind(this) );
             table.thead.addEvent( 'click', this.sort.bind(this) );
-            this.style( table.thead, this.options.css.sort );
+            this.style( table.thead, 'sort' );
         }
 
     },
