@@ -67,13 +67,14 @@ var TableX = new Class({
         * ?? insert SPANs as place-holder of the missing gBars
 
     */
-    filter: function(fieldName){
+    filter: function( fieldName ){
 
         var rows = this.table.rows,
             tlen = rows.length, col, l, r, i, 
-            result=[];
+            result = [];
 
-        if( tlen > 1 ){ /* check for COLUMN based table */
+        if( tlen > 1 ){ // first check for COLUMN based table 
+
             r = rows[0]; //header row
 
             for( col=0, l=r.cells.length; col<l; col++ ){
@@ -89,8 +90,10 @@ var TableX = new Class({
             }
         }
 
-        for( i=0; i < tlen; i++ ){  // check for ROW based table 
+        for( i=0; i < tlen; i++ ){  // finally, check for ROW based table 
+
             r = rows[i]; 
+
             if( $(r.cells[0]).get('text').trim() == fieldName ){
                 //take this ROW
                 return  Array.slice(r.cells,1);
