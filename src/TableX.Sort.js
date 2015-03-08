@@ -1,6 +1,6 @@
 /*
 Class: TableX.Sort
-    Adds ''click'' handlers to sort table columns.
+    Adds ""click"" handlers to sort table columns.
     CSS classes are added to the header depending on the sort order.
     The data-type of each column is auto-recognized.
 
@@ -21,9 +21,9 @@ TableX.Sort = new Class({
 
     options: {
         css: {
-            sort: 'sort',
-            atoz: 'up',
-            ztoa: 'down'
+            sort: "sort",
+            atoz: "up",
+            ztoa: "down"
         },
         hints: {
             sort: "Click to sort",
@@ -35,20 +35,24 @@ TableX.Sort = new Class({
     initialize: function(table, options){
 
         this.setOptions(options);
-        
-        this.table = table = new TableX(table,{ minSize: 3 });
+
+        this.table = table = new TableX(table, { minSize: 3 });
 
         if( table && table.thead ){
-            //table.table.rows[0].addEvent( 'click:relay(th)', this.sort.bind(this) );
-            table.thead.addEvent( 'click', this.sort.bind(this) );
-            this.style( table.thead, 'sort' );
+
+            //table.table.rows[0].addEvent( "click:relay(th)", this.sort.bind(this) );
+            table.thead.addEvent( "click", this.sort.bind(this) );
+            this.style( table.thead, "sort" );
+
         }
 
     },
 
     style: function(element, newStyle){
+
         var options = this.options;
-        element.set({'class': options.css[newStyle], title: options.hints[newStyle] });
+        element.set({ "class": options.css[newStyle], title: options.hints[newStyle] });
+
     },
 
     sort: function( event ){
@@ -58,7 +62,7 @@ TableX.Sort = new Class({
             rows = table.rows,
             css = this.options.css,
             th = event.target,
-            sortAtoZ = th.hasClass(css.atoz) ? 'ztoa':'atoz';
+            sortAtoZ = th.hasClass(css.atoz) ? "ztoa" : "atoz";
 
         //this.style(th, "processing");
         table.refresh(
@@ -66,7 +70,7 @@ TableX.Sort = new Class({
                 rows.naturalSort( thead.indexOf(th) ) :
                 rows.reverse()
         );
-        this.style( thead, 'sort');
+        this.style( thead, "sort");
         this.style( th, sortAtoZ );
 
     }

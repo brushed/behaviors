@@ -151,18 +151,30 @@ Viewer.LIB.append([
     }],
 
     //google maps
-    ['^https?://maps.google.com/maps',function(url){
+    //FIXME
+    ['^https?://maps.google.com/maps?',function(url){
 
         //href="https://maps.google.com/maps?q=Atomium,%20City%20of%20Brussels,%20Belgium&amp;output=embed"
         return {
             src: url + '&output=embed',
+            //src: url.replace('maps?','maps/embed?'),
+            //src: url.replace('maps.google.com/maps?q=','www.google.com/maps/embed?pb='),
             width:850,
-            height:500,
-            scrolling:'no' 
+            height:500
         }
 
     }],
 
+    ['^https?://www.google.com/maps/place/',function(url){
+
+        //href=https://www.google.com/maps/place/Atomium/@50.894941,4.341547,17z/data=!3m1!4b1!4m2!3m1!1s0x0:0x5293071d68a63709?hl=en-US
+        return {
+            src: url.replace('www.google.com/maps/place/','/maps.google.com/maps?q=')+"&output=embed",
+            width:850,
+            height:500
+        }
+
+    }],
 
     //add some mp3/audio player here
 

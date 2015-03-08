@@ -298,7 +298,7 @@ Example:
 
 var B = Browser,
     NativeEvents = Element.NativeEvents,
-    pfx = B.cssprefix = (B.safari || B.chrome || B.Platform.ios) ? 'webkit' : (B.opera) ? 'o' : (B.ie) ? 'ms' : '';
+    pfx = B.cssprefix = (B.safari || B.chrome || B.platform.ios) ? 'webkit' : (B.opera) ? 'o' : (B.ie) ? 'ms' : '';
 
     for ( style in css3 ){
 
