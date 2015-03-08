@@ -105,9 +105,9 @@ var GraphBar = new Class({
 
             }
 
-            if( bars && bars[0] && (data = bars.sortable() ) ){
+            if( bars && bars[0] ){
 
-                data = data.scale();
+                data = bars.toNatural().scale();
                 for( i = 0, len = bars.length; i < len; i++){
                     self.render( bars[i], data[i], (i + 1) / len );
                 }
